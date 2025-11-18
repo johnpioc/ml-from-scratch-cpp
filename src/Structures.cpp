@@ -161,6 +161,12 @@ namespace Structures {
         return result;
     }
 
+    Vector::~Vector()
+    {
+        delete[] this->data_;
+    }
+
+
     // ===========================================================================================
     // MATRIX METHODS
     // ===========================================================================================
@@ -217,5 +223,14 @@ namespace Structures {
         }
         
         this->data_[colIndex][rowIndex] = value;
+    }
+
+    Matrix::~Matrix()
+    {
+        for (int i = 0; i < this->numCols_; i++) {
+            delete[] this->data_[i];
+        }
+
+        delete[] this->data_;
     }
 }

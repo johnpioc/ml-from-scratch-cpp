@@ -30,6 +30,8 @@ namespace Structures {
         Vector& operator*(const double value);
 
         double dot(const Vector& other);
+
+        ~Vector();
     };
 
     struct Matrix {
@@ -47,5 +49,7 @@ namespace Structures {
         double** getData();
         double get(int rowIndex, int colIndex);
         void put(int rowIndex, int colIndex, double value);
-    }
+
+        ~Matrix();
+    };
 }
