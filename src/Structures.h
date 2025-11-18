@@ -4,36 +4,6 @@
 #include <cstdint>
 
 namespace Structures {
-
-    /**
-    * Column Vector
-    */
-    struct Vector {
-    private:
-        size_t numRows_;
-        double* data_;
-
-    public:
-        Vector(size_t numRows);
-        Vector(size_t numRows, double* values);
-
-        size_t getNumRows();
-        double* getData();
-        double get(int index);
-        void put(int index, double value);
-
-        Vector& operator+(const Vector& vector);
-        Vector& operator+(const double value);
-        Vector& operator-(const Vector& vector);
-        Vector& operator-(const double value);
-        Vector& operator*(const Vector& vector);
-        Vector& operator*(const double value);
-
-        double dot(const Vector& other);
-
-        ~Vector();
-    };
-
     struct Matrix {
     private:
         size_t numRows_;
@@ -49,6 +19,7 @@ namespace Structures {
         double** getData();
         double get(int rowIndex, int colIndex);
         void put(int rowIndex, int colIndex, double value);
+        void print();
 
         ~Matrix();
     };

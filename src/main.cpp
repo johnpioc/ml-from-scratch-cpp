@@ -51,7 +51,7 @@ std::vector<Image*> processTrainingData()
             if (index == 0) {
                 number = std::stod(value);
             } else {
-                values[index / NUM_COLS][index % NUM_ROWS] = std::stod(value);
+                values[index % NUM_ROWS][index / NUM_COLS] = std::stod(value);
             }
             index++;
         }
@@ -71,5 +71,6 @@ int main()
     *   index 1: test set
     */
     std::vector<Image*> data = processTrainingData();
+    data.front()->getCellValues()->print();
     return 0;
 }
