@@ -71,6 +71,5 @@ int main()
     *   index 1: test set
     */
     std::vector<Image*> data = processTrainingData();
-    data.front()->getCellValues()->print();
     return 0;
 }

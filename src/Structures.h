@@ -18,9 +18,48 @@ namespace Structures {
         size_t getNumCols();
         double** getData();
         double get(int rowIndex, int colIndex);
+        double* getRow(int rowIndex);
         void put(int rowIndex, int colIndex, double value);
         void print();
 
         ~Matrix();
+    };
+
+    struct Layer {
+    private:
+        size_t neuronsSize_;
+        size_t prevLayerNeuronsSize_;
+        Matrix* weights_;
+        float* neuronValues_;
+        double bias_;
+
+    public:
+        Layer(size_t neuronsSize, size_t prevLayerNeuronsSize);
+
+        void setWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex, double value);
+        double getWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex);
+        void computeNeuronValues(float* prevLayerNeuronValues);
+        void setNeuronValues(float* values);
+        float getNeuronValue(int neuronIndex);
+        void getNeuronValues(float* buf);
+        void setBias(double bias);
+        double getBias();
+
+        ~Layer();
+    };
+
+    struct NeuralNetwork {
+    private:
+        size_t numLayers_; // Including input and output layer
+        size_t* layerSizes_;
+        Layer** layers_;
+
+        void initialiseParams();
+
+    public:
+        NeuralNetwork(size_t numLayers, size_t* layerSizes);
+        void getOutput(double* input, float* buf, size_t* bufSize);
+        void train();
+        ~NeuralNetwork();
     };
 }

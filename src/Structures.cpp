@@ -1,5 +1,6 @@
 #include <iostream>
 #include <iomanip>
+#include <cmath>
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
@@ -9,6 +10,8 @@
 
 namespace Structures {
     void printSeperator(int numCols, int* colSpaces);
+    float sigmoidFunction(double raw);
+    double dotProduct(double* vectorA, float* vectorB, int length);
 
     // ===========================================================================================
     // MATRIX METHODS
@@ -128,6 +131,116 @@ namespace Structures {
     }
 
     // ===========================================================================================
+    // LAYER METHODS
+    // ===========================================================================================
+    Layer::Layer(size_t neuronsSize, size_t prevLayerNeuronsSize)
+    {
+        this->neuronsSize_ = neuronsSize;
+        this->prevLayerNeuronsSize_ = prevLayerNeuronsSize;
+
+        this->neuronValues_ = new float[this->neuronsSize_];
+        this->weights_ = new Matrix(this->neuronsSize_, this->prevLayerNeuronsSize_);
+    }
+
+    void Layer::setWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex, double value)
+    {
+        this->weights_->put(currLayerNeuronIndex, prevLayerNeuronIndex, value);
+    }
+
+    double Layer::getWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex)
+    {
+        return this->weights_->get(currLayerNeuronIndex, prevLayerNeuronIndex);
+    }
+
+    void Layer::computeNeuronValues(float* prevLayerNeuronValues)
+    {
+        for (int i = 0; i < this->neuronsSize_; i++) {
+            this->neuronValues_[i] = 
+                sigmoidFunction(
+                    dotProduct(
+                        this->weights_->getRow(i), prevLayerNeuronValues,
+                        this->prevLayerNeuronsSize_
+                    ) - this->bias_ 
+                );
+        }
+    }
+
+    void Layer::setNeuronValues(float* values)
+    {
+        for (int i = 0; i < this->neuronsSize_; i++) {
+            this->neuronValues_[i] = values[i];
+        }
+    }
+
+    float Layer::getNeuronValue(int neuronIndex)
+    {
+        if (neuronIndex < 0 || neuronIndex >= this->neuronsSize_)
+            throw std::invalid_argument("invalid neuron index");
+
+        return this->neuronValues_[neuronIndex];
+    }
+
+    void Layer::setBias(double bias) { this->bias_ = bias; }
+    double Layer::getBias() { return this->bias_; }
+
+    Layer::~Layer()
+    {
+        delete this->weights_;
+        delete[] neuronValues_;
+    }
+
+    // ===========================================================================================
+    // NEURAL NETWORK METHODS
+    // ===========================================================================================
+    NeuralNetwork::NeuralNetwork(size_t numLayers, size_t* layerSizes)
+    {
+        this->numLayers_ = numLayers;
+        this->layerSizes_ = new size_t[this->numLayers_];
+        this->layers_ = new Layer[this->numLayers_];
+        for (int i = 0; i < this->numLayers_; i++) {
+            this->layerSizes_[i] = layerSizes[i];
+            this->layers_[i] = 
+                new Layer(layerSizes[i], i == 0 ? layerSizes[0] : layerSizes[i - 1]);
+        }
+    }
+
+    void NeuralNetwork::getOutput(double* input, float* buf, size_t* bufSize)
+    {
+        // Set values for first layer (input layer)
+        float compressedInput[this->layerSizes_[0]];
+        for (int i = 0;i < this->layerSizes_[0]; i++) { 
+            compressedInput[i] = sigmoidFunction(input[i]);
+        }
+
+        this->layers_[0]->setNeuronValues(compressedInput);
+
+        for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
+            float* prevLayerNeuronValues = new float[this->layerSizes_[layerIndex - 1]];
+            this->layers_[layerIndex - 1]->getNeuronValues(prevLayerNeuronValues);
+            this->layers_[layerIndex]->computeNeuronValues(prevLayerNeuronValues);
+            delete[] prevLayerNeuronValues;
+        }
+
+        // Get output layer vector
+        this->layers_[this->numLayers_ - 1]->getNeuronValues(buf);
+        (*bufSize) = this->layerSizes_[this->numLayers_ - 1];
+    }
+
+    void NeuralNetwork::train()
+    {
+        
+    }
+
+    NeuralNetwork::~NeuralNetwork()
+    {
+        for (int i = 0; i < this->numLayers_; i++) {
+            delete this->layers_[i];
+        }
+        delete[] this->layers_;
+        delete[] layerSizes_;
+    }
+
+    // ===========================================================================================
     // HELPERS
     // ===========================================================================================
     void printSeperator(int numCols, int *colSpaces) 
@@ -137,5 +250,19 @@ namespace Structures {
             for (int i = 0; i < colSpaces[colIndex]; i++) { std:: cout << "_"; }
         }
         std::cout << "_\n";
+    }
+
+    float sigmoidFunction(double raw)
+    {
+        return 1 / (1 + std::exp(-raw));
+    }
+
+    double dotProduct(double* vectorA, float* vectorB, int length)
+    {
+        double sum = 0;
+        for (int i = 0; i < length; i++) {
+            sum += vectorA[i] * vectorB[i];
+        }
+        return sum;
     }
 }
