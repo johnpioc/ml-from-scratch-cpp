@@ -66,10 +66,21 @@ std::vector<Image*> processTrainingData()
 
 int main()
 {
-    /* Process Data into Matrices:
-    *   index 0: training set
-    *   index 1: test set
-    */
     std::vector<Image*> data = processTrainingData();
+
+    size_t numLayers = 4;
+    size_t layerSizes[] = { 784, 16, 16, 10 };
+    Structures::NeuralNetwork* nnet = new Structures::NeuralNetwork(numLayers, layerSizes);
+
+    float buf[10];
+    size_t bufSize;
+
+    nnet->getOutput(data.front()->getCellValues(), buf, &bufSize);
+    std::cout << "Real: " << data.front()->getNumber() << "\n";
+    std::cout << "Actual: \n";
+    for (int i = 0; i < bufSize; i++) {
+        std::cout << std::to_string(i) << ": " << std::to_string(buf[i]) << "\n";
+    }
+
     return 0;
 }

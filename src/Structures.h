@@ -18,7 +18,7 @@ namespace Structures {
         size_t getNumCols();
         double** getData();
         double get(int rowIndex, int colIndex);
-        double* getRow(int rowIndex);
+        void getRow(int rowIndex, double** buf, size_t* bufSize);
         void put(int rowIndex, int colIndex, double value);
         void print();
 
@@ -38,10 +38,10 @@ namespace Structures {
 
         void setWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex, double value);
         double getWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex);
-        void computeNeuronValues(float* prevLayerNeuronValues);
+        void computeNeuronValues(float** prevLayerNeuronValues);
         void setNeuronValues(float* values);
         float getNeuronValue(int neuronIndex);
-        void getNeuronValues(float* buf);
+        void getNeuronValues(float** buf);
         void setBias(double bias);
         double getBias();
 
@@ -58,7 +58,8 @@ namespace Structures {
 
     public:
         NeuralNetwork(size_t numLayers, size_t* layerSizes);
-        void getOutput(double* input, float* buf, size_t* bufSize);
+        void getOutput(Matrix* input, float* buf, size_t* bufSize);
+        Layer* getLayer(int layerIndex);
         void train();
         ~NeuralNetwork();
     };

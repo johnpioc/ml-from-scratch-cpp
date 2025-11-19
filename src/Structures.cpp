@@ -4,13 +4,15 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
+#include <random>
+#include <limits>
 
 #include "Structures.h"
 
 
 namespace Structures {
     void printSeperator(int numCols, int* colSpaces);
-    float sigmoidFunction(double raw);
+    float relu(double raw);
     double dotProduct(double* vectorA, float* vectorB, int length);
 
     // ===========================================================================================
@@ -56,6 +58,16 @@ namespace Structures {
         }
 
         return this->data_[colIndex][rowIndex];
+    }
+
+    void Matrix::getRow(int rowIndex, double** buf, size_t* bufSize)
+    {
+        (*buf) = new double[this->numCols_];
+        (*bufSize) = this->numCols_;
+
+        for (int colIndex = 0; colIndex < this->numCols_; colIndex++) {
+            (*buf)[colIndex] = this->get(rowIndex, colIndex);
+        }
     }
 
     void Matrix::put(int rowIndex, int colIndex, double value)
@@ -152,16 +164,20 @@ namespace Structures {
         return this->weights_->get(currLayerNeuronIndex, prevLayerNeuronIndex);
     }
 
-    void Layer::computeNeuronValues(float* prevLayerNeuronValues)
+    void Layer::computeNeuronValues(float** prevLayerNeuronValues)
     {
         for (int i = 0; i < this->neuronsSize_; i++) {
+            double* currentWeights;
+            size_t bufSize;
+            this->weights_->getRow(i, &currentWeights, &bufSize);
             this->neuronValues_[i] = 
-                sigmoidFunction(
+                relu(
                     dotProduct(
-                        this->weights_->getRow(i), prevLayerNeuronValues,
+                        currentWeights, (*prevLayerNeuronValues),
                         this->prevLayerNeuronsSize_
                     ) - this->bias_ 
                 );
+            delete[] currentWeights;
         }
     }
 
@@ -180,6 +196,14 @@ namespace Structures {
         return this->neuronValues_[neuronIndex];
     }
 
+    void Layer::getNeuronValues(float** buf)
+    {
+        (*buf) = new float[this->neuronsSize_];
+        for (int i = 0; i < this->neuronsSize_; i++) {
+            (*buf)[i] = this->getNeuronValue(i);
+        }
+    }
+
     void Layer::setBias(double bias) { this->bias_ = bias; }
     double Layer::getBias() { return this->bias_; }
 
@@ -192,43 +216,84 @@ namespace Structures {
     // ===========================================================================================
     // NEURAL NETWORK METHODS
     // ===========================================================================================
+    void NeuralNetwork::initialiseParams()
+    {
+        // Apply a weight of 1 and a bias of 0 to the first layer as its the input layer
+        Layer* inputLayer = this->layers_[0];
+        inputLayer->setBias(0.0);
+        for (int i = 0; i < this->layerSizes_[0]; i++) {
+            for (int j = 0; j < this->layerSizes_[0]; j++) {
+                inputLayer->setWeight(i, j, 1.0);
+            }
+        }
+
+        double lowerBound = std::numeric_limits<double>::min();
+        double upperBound = std::numeric_limits<double>::max();
+        std::uniform_real_distribution<double> rand(lowerBound, upperBound);
+        std::default_random_engine re;
+        re.seed(67);
+
+        // For rest of layers, apply a random weight and bias
+        for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
+            Layer* currentLayer = this->layers_[layerIndex];
+            currentLayer->setBias(rand(re));
+            for (int currLayerNeuronIndex = 0; currLayerNeuronIndex < 
+                this->layerSizes_[layerIndex]; currLayerNeuronIndex++) {
+                for (int prevLayerNeuronIndex = 0; prevLayerNeuronIndex < 
+                    this->layerSizes_[layerIndex - 1]; prevLayerNeuronIndex++) {
+                    currentLayer->setWeight(currLayerNeuronIndex, prevLayerNeuronIndex,
+                        rand(re));
+                }
+            }
+        }
+    }
+
     NeuralNetwork::NeuralNetwork(size_t numLayers, size_t* layerSizes)
     {
         this->numLayers_ = numLayers;
         this->layerSizes_ = new size_t[this->numLayers_];
-        this->layers_ = new Layer[this->numLayers_];
+        this->layers_ = new Layer*[this->numLayers_];
         for (int i = 0; i < this->numLayers_; i++) {
             this->layerSizes_[i] = layerSizes[i];
             this->layers_[i] = 
                 new Layer(layerSizes[i], i == 0 ? layerSizes[0] : layerSizes[i - 1]);
         }
+        this->initialiseParams();
     }
 
-    void NeuralNetwork::getOutput(double* input, float* buf, size_t* bufSize)
+    void NeuralNetwork::getOutput(Matrix* input, float* buf, size_t* bufSize)
     {
         // Set values for first layer (input layer)
         float compressedInput[this->layerSizes_[0]];
-        for (int i = 0;i < this->layerSizes_[0]; i++) { 
-            compressedInput[i] = sigmoidFunction(input[i]);
+        for (int i = 0 ;i < this->layerSizes_[0]; i++) { 
+            compressedInput[i] = 
+                relu(input->get(i / 28, i % 28));
         }
 
         this->layers_[0]->setNeuronValues(compressedInput);
 
         for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
-            float* prevLayerNeuronValues = new float[this->layerSizes_[layerIndex - 1]];
-            this->layers_[layerIndex - 1]->getNeuronValues(prevLayerNeuronValues);
-            this->layers_[layerIndex]->computeNeuronValues(prevLayerNeuronValues);
+            float* prevLayerNeuronValues;
+            this->layers_[layerIndex - 1]->getNeuronValues(&prevLayerNeuronValues);
+            this->layers_[layerIndex]->computeNeuronValues(&prevLayerNeuronValues);
             delete[] prevLayerNeuronValues;
         }
 
         // Get output layer vector
-        this->layers_[this->numLayers_ - 1]->getNeuronValues(buf);
+        this->layers_[this->numLayers_ - 1]->getNeuronValues(&buf);
         (*bufSize) = this->layerSizes_[this->numLayers_ - 1];
+    }
+
+    Layer* NeuralNetwork::getLayer(int layerIndex)
+    {
+        if (layerIndex < 0 || layerIndex >= this->numLayers_)
+            throw std::invalid_argument("Layer index is invalid");
+
+        return this->layers_[layerIndex];
     }
 
     void NeuralNetwork::train()
     {
-        
     }
 
     NeuralNetwork::~NeuralNetwork()
@@ -252,9 +317,9 @@ namespace Structures {
         std::cout << "_\n";
     }
 
-    float sigmoidFunction(double raw)
+    float relu(double raw)
     {
-        return 1 / (1 + std::exp(-raw));
+        return (raw > 0) ? raw : 0;
     }
 
     double dotProduct(double* vectorA, float* vectorB, int length)
