@@ -12,7 +12,6 @@
 
 namespace Structures {
     void printSeperator(int numCols, int* colSpaces);
-    float relu(double raw);
     double dotProduct(double* vectorA, float* vectorB, int length);
 
     // ===========================================================================================
@@ -248,6 +247,43 @@ namespace Structures {
         }
     }
 
+    double NeuralNetwork::cost(int layerIndex, int neuronIndex, double expected)
+    {
+        return pow(expected - this->layers_[layerIndex]->getNeuronValue(neuronIndex), 2.0);
+    }
+
+    double NeuralNetwork::relu(double raw)
+    {
+        return (raw > 0) ? raw : 0;
+    }
+
+    double NeuralNetwork::reluDerivative(double raw)
+    {
+        return (raw > 0) ? 1 : 0;
+    }
+
+    double** NeuralNetwork::backPropagate(double** expectedOutput)
+    {
+        double** layerWeightAdjustments = new double*[this->numLayers_];
+        for (int i = 0; i < this->numLayers_; i++) {
+            layerWeightAdjustments[i] = new double[this->layerSizes_[i]];
+        }
+
+        double* currExpected = (*expectedOutput);
+        for (int layerIndex = this->numLayers_ - 1; layerIndex >= 1; layerIndex--) {
+            Layer* currentLayer = this->layers_[layerIndex];
+            for (int neuronIndex = 0; neuronIndex <= this->layerSizes_[layerIndex];
+                neuronIndex++) {
+                double currentWeightAdjustment = 2 * (currentLayer->getNeuronValue(neuronIndex)
+                    - currExpected[neuronIndex]) 
+                    * reluDerivative(currentLayer->getNeuronValue(neuronIndex)) 
+                    * this->layers_[neuronIndex - 1]->getNeuronValue()
+            }
+        }
+
+        return layerWeightAdjustments;
+    }
+
     NeuralNetwork::NeuralNetwork(size_t numLayers, size_t* layerSizes)
     {
         this->numLayers_ = numLayers;
@@ -317,10 +353,7 @@ namespace Structures {
         std::cout << "_\n";
     }
 
-    float relu(double raw)
-    {
-        return (raw > 0) ? raw : 0;
-    }
+    
 
     double dotProduct(double* vectorA, float* vectorB, int length)
     {

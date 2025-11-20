@@ -55,6 +55,9 @@ namespace Structures {
         Layer** layers_;
 
         void initialiseParams();
+        double cost(int layerIndex, int neuronIndex, double expected);
+        double relu(double raw);
+        void backPropagate(double* expectedOutput);
 
     public:
         NeuralNetwork(size_t numLayers, size_t* layerSizes);
