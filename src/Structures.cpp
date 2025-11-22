@@ -9,10 +9,12 @@
 
 #include "Structures.h"
 
-
 namespace Structures {
+    // HELPER FUNCTION DECLARATIONS
     void printSeperator(int numCols, int* colSpaces);
-    double dotProduct(double* vectorA, float* vectorB, int length);
+    double dotProduct(double* vectorA, double* vectorB, int length);
+    double relu(double raw);
+    double reluDerivative(double raw);
 
     // ===========================================================================================
     // MATRIX METHODS
@@ -59,10 +61,9 @@ namespace Structures {
         return this->data_[colIndex][rowIndex];
     }
 
-    void Matrix::getRow(int rowIndex, double** buf, size_t* bufSize)
+    void Matrix::getRow(int rowIndex, double** buf)
     {
         (*buf) = new double[this->numCols_];
-        (*bufSize) = this->numCols_;
 
         for (int colIndex = 0; colIndex < this->numCols_; colIndex++) {
             (*buf)[colIndex] = this->get(rowIndex, colIndex);
@@ -144,12 +145,24 @@ namespace Structures {
     // ===========================================================================================
     // LAYER METHODS
     // ===========================================================================================
+    void Layer::getSoftmaxDistribution(float** buf)
+    {
+        double denom = 0;
+        for (int i = 0; i < this->neuronsSize_; i++) {
+            denom += std::exp(this->getNeuronValue(i));
+        }
+
+        for (int i = 0; i < this->neuronsSize_; i++) {
+            (*buf)[i] = this->getNeuronValue(i) / denom;
+        }
+    }
+
     Layer::Layer(size_t neuronsSize, size_t prevLayerNeuronsSize)
     {
         this->neuronsSize_ = neuronsSize;
         this->prevLayerNeuronsSize_ = prevLayerNeuronsSize;
 
-        this->neuronValues_ = new float[this->neuronsSize_];
+        this->neuronValues_ = new double[this->neuronsSize_];
         this->weights_ = new Matrix(this->neuronsSize_, this->prevLayerNeuronsSize_);
     }
 
@@ -163,12 +176,11 @@ namespace Structures {
         return this->weights_->get(currLayerNeuronIndex, prevLayerNeuronIndex);
     }
 
-    void Layer::computeNeuronValues(float** prevLayerNeuronValues)
+    void Layer::computeNeuronValues(double** prevLayerNeuronValues)
     {
         for (int i = 0; i < this->neuronsSize_; i++) {
             double* currentWeights;
-            size_t bufSize;
-            this->weights_->getRow(i, &currentWeights, &bufSize);
+            this->weights_->getRow(i, &currentWeights);
             this->neuronValues_[i] = 
                 relu(
                     dotProduct(
@@ -180,10 +192,10 @@ namespace Structures {
         }
     }
 
-    void Layer::setNeuronValues(float* values)
+    void Layer::setNeuronValues(double** values)
     {
         for (int i = 0; i < this->neuronsSize_; i++) {
-            this->neuronValues_[i] = values[i];
+            this->neuronValues_[i] = (*values)[i];
         }
     }
 
@@ -195,9 +207,8 @@ namespace Structures {
         return this->neuronValues_[neuronIndex];
     }
 
-    void Layer::getNeuronValues(float** buf)
+    void Layer::getNeuronValues(double** buf)
     {
-        (*buf) = new float[this->neuronsSize_];
         for (int i = 0; i < this->neuronsSize_; i++) {
             (*buf)[i] = this->getNeuronValue(i);
         }
@@ -252,36 +263,9 @@ namespace Structures {
         return pow(expected - this->layers_[layerIndex]->getNeuronValue(neuronIndex), 2.0);
     }
 
-    double NeuralNetwork::relu(double raw)
+    void NeuralNetwork::backPropagate(double* expectedOutput)
     {
-        return (raw > 0) ? raw : 0;
-    }
-
-    double NeuralNetwork::reluDerivative(double raw)
-    {
-        return (raw > 0) ? 1 : 0;
-    }
-
-    double** NeuralNetwork::backPropagate(double** expectedOutput)
-    {
-        double** layerWeightAdjustments = new double*[this->numLayers_];
-        for (int i = 0; i < this->numLayers_; i++) {
-            layerWeightAdjustments[i] = new double[this->layerSizes_[i]];
-        }
-
-        double* currExpected = (*expectedOutput);
-        for (int layerIndex = this->numLayers_ - 1; layerIndex >= 1; layerIndex--) {
-            Layer* currentLayer = this->layers_[layerIndex];
-            for (int neuronIndex = 0; neuronIndex <= this->layerSizes_[layerIndex];
-                neuronIndex++) {
-                double currentWeightAdjustment = 2 * (currentLayer->getNeuronValue(neuronIndex)
-                    - currExpected[neuronIndex]) 
-                    * reluDerivative(currentLayer->getNeuronValue(neuronIndex)) 
-                    * this->layers_[neuronIndex - 1]->getNeuronValue()
-            }
-        }
-
-        return layerWeightAdjustments;
+        return;
     }
 
     NeuralNetwork::NeuralNetwork(size_t numLayers, size_t* layerSizes)
@@ -297,27 +281,14 @@ namespace Structures {
         this->initialiseParams();
     }
 
-    void NeuralNetwork::getOutput(Matrix* input, float* buf, size_t* bufSize)
+    void NeuralNetwork::getOutput(float** buf)
     {
-        // Set values for first layer (input layer)
-        float compressedInput[this->layerSizes_[0]];
-        for (int i = 0 ;i < this->layerSizes_[0]; i++) { 
-            compressedInput[i] = 
-                relu(input->get(i / 28, i % 28));
-        }
+        return;
+    }
 
-        this->layers_[0]->setNeuronValues(compressedInput);
-
-        for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
-            float* prevLayerNeuronValues;
-            this->layers_[layerIndex - 1]->getNeuronValues(&prevLayerNeuronValues);
-            this->layers_[layerIndex]->computeNeuronValues(&prevLayerNeuronValues);
-            delete[] prevLayerNeuronValues;
-        }
-
-        // Get output layer vector
-        this->layers_[this->numLayers_ - 1]->getNeuronValues(&buf);
-        (*bufSize) = this->layerSizes_[this->numLayers_ - 1];
+    void NeuralNetwork::feedForward(Matrix* input)
+    {
+        return;
     }
 
     Layer* NeuralNetwork::getLayer(int layerIndex)
@@ -326,10 +297,6 @@ namespace Structures {
             throw std::invalid_argument("Layer index is invalid");
 
         return this->layers_[layerIndex];
-    }
-
-    void NeuralNetwork::train()
-    {
     }
 
     NeuralNetwork::~NeuralNetwork()
@@ -344,6 +311,12 @@ namespace Structures {
     // ===========================================================================================
     // HELPERS
     // ===========================================================================================
+    /**
+     * @brief Helper function for Matrix print() function that prints a seperator line between rows
+     * of the matrix to stdout
+     * @param numCols the number of columns in the matrix to print
+     * @param colSpaces an array of integers that represent the size of each cell for every column
+     */
     void printSeperator(int numCols, int *colSpaces) 
     {
         for (int colIndex = 0; colIndex < numCols; colIndex++) {
@@ -353,14 +326,31 @@ namespace Structures {
         std::cout << "_\n";
     }
 
-    
-
-    double dotProduct(double* vectorA, float* vectorB, int length)
+    /**
+     * @brief Performs the dot product on two vectors
+     * @param vectorA an array of doubles
+     * @param vectorB an array of doubles
+     * @param length the size of vectorA and vectorB
+     * @returns the dot product of vectorA and vectorB
+     */
+    double dotProduct(double* vectorA, double* vectorB, int length)
     {
         double sum = 0;
         for (int i = 0; i < length; i++) {
             sum += vectorA[i] * vectorB[i];
         }
         return sum;
+    }
+
+    /** Rectified linear unit (squishification function for neuron values) */
+    double relu(double raw)
+    {
+        return (raw > 0) ? raw : 0;
+    }
+
+    /** Derivative of the relu */
+    double reluDerivative(double raw)
+    {
+        return (raw > 0) ? 1 : 0;
     }
 }
