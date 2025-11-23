@@ -6,29 +6,12 @@
 
 #include "Structures.h"
 
-#define NUM_ROWS 28
 #define NUM_COLS 28
-#define NUM_CELLS 784
+#define NUM_ROWS 28
 
-struct Image {
-private:
-    int number_;
-    Structures::Matrix* cellValues_;
-
-public:
-    Image(int number, double** values) {
-        this->number_ = number;
-        this->cellValues_ = new Structures::Matrix(NUM_ROWS, NUM_COLS, values);
-    }
-
-    int getNumber() { return this->number_; }
-
-    Structures::Matrix* getCellValues() { return this->cellValues_; };
-};
-
-std::vector<Image*> processTrainingData() 
+std::vector<Structures::Image*> processTrainingData() 
 {
-    std::vector<Image*> data;
+    std::vector<Structures::Image*> data;
     std::string line;
 
     std::ifstream trainingFile("../data/mnist_train.csv");
@@ -51,12 +34,12 @@ std::vector<Image*> processTrainingData()
             if (index == 0) {
                 number = std::stod(value);
             } else {
-                values[index % NUM_ROWS][index / NUM_COLS] = std::stod(value);
+                values[(index - 1) / NUM_ROWS][(index - 1) % NUM_COLS] = std::stod(value);
             }
             index++;
         }
 
-        data.push_back(new Image(number, values));
+        data.push_back(new Structures::Image(number, values));
         for (int i = 0; i < NUM_COLS; i++) { delete[] values[i]; }
         delete[] values;
     }
@@ -66,16 +49,18 @@ std::vector<Image*> processTrainingData()
 
 int main()
 {
-    std::vector<Image*> data = processTrainingData();
+    std::vector<Structures::Image*> data = processTrainingData();
 
     size_t numLayers = 4;
     size_t layerSizes[] = { 784, 16, 16, 10 };
     Structures::NeuralNetwork* nnet = new Structures::NeuralNetwork(numLayers, layerSizes);
 
-    float buf[10];
-    size_t bufSize;
+    nnet->train(data, 1000);
 
-    nnet->getOutput(data.front()->getCellValues(), buf, &bufSize);
+    float* buf = new float[10];
+    size_t bufSize = 10;
+
+    nnet->getOutput(&buf);
     std::cout << "Real: " << data.front()->getNumber() << "\n";
     std::cout << "Actual: \n";
     for (int i = 0; i < bufSize; i++) {

@@ -4,6 +4,8 @@
 #include <cstdint>
 
 namespace Structures {
+
+    
     /**
      * Matrix that stores double values
      */
@@ -71,6 +73,24 @@ namespace Structures {
     };
 
     /**
+     * Contains data for a single image observation
+     */
+    struct Image {
+    private:
+        int number_;
+        Matrix* cellValues_;
+
+    public:
+        Image(int number, double** values) {
+            this->number_ = number;
+            this->cellValues_ = new Matrix(28, 28, values);
+        }
+
+        int getNumber() { return this->number_; }
+        Matrix* getCellValues() { return this->cellValues_; }
+    };
+
+    /**
      * Layer of neurons inside a Neural Network
      */
     struct Layer {
@@ -82,25 +102,26 @@ namespace Structures {
         // Matrix of connection weights from the previous layer to this layer
         Matrix* weights_;
         // The values of the neurons of this layer
-        double* neuronValues_;
-        // The bias associated with this layer
-        double bias_;
-
-        /**
-         * @brief Generates a probability distribution of all the neurons inside this layer with
-         * their corresponding values
-         * @param buf a pointer to an allocated array of floats which will store the probability 
-         * distribution values for each neuron
-         */
-        void getSoftmaxDistribution(float** buf);
+        float* neuronValues_;
+        // The biases associated with each neuron in this layer
+        double* bias_;
 
     public:
+        /**
+         */
+        void applySoftmaxDistribution(double* raw);
+
         /**
          * @brief constructs a Layer struct and initialises neuron values to 0.0
          * @param neuronsSize the number of neurons inside the layer
          * @param prevLayerNeuronsSize the number of neurons inside the previous layer
          */
         Layer(size_t neuronsSize, size_t prevLayerNeuronsSize);
+
+        /** Retruns the number of neurons in this layer */
+        size_t getNeuronsSize();
+        /** Returns the number of neurons in previous layer */
+        size_t getPrevLayerNeuronsSize();
 
         /**
          * @brief Sets the weight for a given connection between a neuron in the previous layer and
@@ -126,14 +147,14 @@ namespace Structures {
          * @param prevLayerNeuronValues a pointer to an array of doubles that represent the neuron
          * values from the previous layer
          */
-        void computeNeuronValues(double** prevLayerNeuronValues);
+        void computeNeuronValues(float** prevLayerNeuronValues);
 
         /**
          * @brief Directly sets the neuron values inside this layer
          * @param values a pointer to an array of doubles that represent the values for the neurons
          * in this layer
          */
-        void setNeuronValues(double** values);
+        void setNeuronValues(double* values);
 
         /**
          * @brief Retrives the value of a given neuron
@@ -146,12 +167,12 @@ namespace Structures {
          * @param buf a pointer to an allocated array of doubles which will store the values of the
          * neurons in this layer
          */
-        void getNeuronValues(double** buf);
+        void getNeuronValues(float** buf);
 
-        /** Sets the bias associated with the layer */
-        void setBias(double bias);
+        /** Sets the bias associated with a neuron in this layer */
+        void setBias(int neuronIndex, double bias);
         /** Returns the bias associated with the layer */
-        double getBias();
+        double getBias(int neuronIndex);
 
         /** Destructor */
         ~Layer();
@@ -183,7 +204,7 @@ namespace Structures {
          * @brief Performs the back-propagation algorithm by taking in an array of expected output
          * neuron values and traverses each layer from output to input adjusting weights and biases
          */
-        void backPropagate(double* expectedOutput);
+        void backPropagate(double* expectedOutput, Matrix** weightsBuf, double*** biasBuf);
 
     public:
         /**
@@ -209,6 +230,8 @@ namespace Structures {
 
         /** Retrives a layer from the network */
         Layer* getLayer(int layerIndex);
+
+        void train(std::vector<Image*> observations, int n);
 
         /** Destructor */
         ~NeuralNetwork();

@@ -12,7 +12,7 @@
 namespace Structures {
     // HELPER FUNCTION DECLARATIONS
     void printSeperator(int numCols, int* colSpaces);
-    double dotProduct(double* vectorA, double* vectorB, int length);
+    double dotProduct(double* vectorA, float* vectorB, int length);
     double relu(double raw);
     double reluDerivative(double raw);
 
@@ -72,14 +72,6 @@ namespace Structures {
 
     void Matrix::put(int rowIndex, int colIndex, double value)
     {
-        if (rowIndex < 0 || rowIndex >= this->numRows_) {
-            throw std::invalid_argument("Row index is invalid");
-        }
-
-        if (colIndex < 0 || colIndex >= this->numCols_) {
-            throw std::invalid_argument("Column index is invalid");
-        }
-
         this->data_[colIndex][rowIndex] = value;
     }
 
@@ -145,26 +137,29 @@ namespace Structures {
     // ===========================================================================================
     // LAYER METHODS
     // ===========================================================================================
-    void Layer::getSoftmaxDistribution(float** buf)
+    void Layer::applySoftmaxDistribution(double* raw)
     {
         double denom = 0;
         for (int i = 0; i < this->neuronsSize_; i++) {
-            denom += std::exp(this->getNeuronValue(i));
+            denom += std::exp(raw[i]);
         }
 
         for (int i = 0; i < this->neuronsSize_; i++) {
-            (*buf)[i] = this->getNeuronValue(i) / denom;
+            this->neuronValues_[i] = std::exp(raw[i]) / denom;
         }
     }
-
     Layer::Layer(size_t neuronsSize, size_t prevLayerNeuronsSize)
     {
         this->neuronsSize_ = neuronsSize;
         this->prevLayerNeuronsSize_ = prevLayerNeuronsSize;
 
-        this->neuronValues_ = new double[this->neuronsSize_];
+        this->neuronValues_ = new float[this->neuronsSize_];
         this->weights_ = new Matrix(this->neuronsSize_, this->prevLayerNeuronsSize_);
+        this->bias_ = new double[this->neuronsSize_];
     }
+
+    size_t Layer::getNeuronsSize() { return this->neuronsSize_; }
+    size_t Layer::getPrevLayerNeuronsSize() { return this->prevLayerNeuronsSize_; }
 
     void Layer::setWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex, double value)
     {
@@ -176,27 +171,29 @@ namespace Structures {
         return this->weights_->get(currLayerNeuronIndex, prevLayerNeuronIndex);
     }
 
-    void Layer::computeNeuronValues(double** prevLayerNeuronValues)
+    void Layer::computeNeuronValues(float** prevLayerNeuronValues)
     {
+        double* raw = new double[this->getNeuronsSize()];
         for (int i = 0; i < this->neuronsSize_; i++) {
             double* currentWeights;
             this->weights_->getRow(i, &currentWeights);
-            this->neuronValues_[i] = 
+            raw[i] = 
                 relu(
                     dotProduct(
                         currentWeights, (*prevLayerNeuronValues),
                         this->prevLayerNeuronsSize_
-                    ) - this->bias_ 
+                    ) - this->bias_[i]
                 );
             delete[] currentWeights;
         }
+
+        this->applySoftmaxDistribution(raw);
+        delete[] raw;
     }
 
-    void Layer::setNeuronValues(double** values)
+    void Layer::setNeuronValues(double* values)
     {
-        for (int i = 0; i < this->neuronsSize_; i++) {
-            this->neuronValues_[i] = (*values)[i];
-        }
+        this->applySoftmaxDistribution(values);
     }
 
     float Layer::getNeuronValue(int neuronIndex)
@@ -207,15 +204,15 @@ namespace Structures {
         return this->neuronValues_[neuronIndex];
     }
 
-    void Layer::getNeuronValues(double** buf)
+    void Layer::getNeuronValues(float** buf)
     {
         for (int i = 0; i < this->neuronsSize_; i++) {
             (*buf)[i] = this->getNeuronValue(i);
         }
     }
 
-    void Layer::setBias(double bias) { this->bias_ = bias; }
-    double Layer::getBias() { return this->bias_; }
+    void Layer::setBias(int neuronIndex, double bias) { this->bias_[neuronIndex] = bias; }
+    double Layer::getBias(int neuronIndex) { return this->bias_[neuronIndex]; }
 
     Layer::~Layer()
     {
@@ -230,15 +227,15 @@ namespace Structures {
     {
         // Apply a weight of 1 and a bias of 0 to the first layer as its the input layer
         Layer* inputLayer = this->layers_[0];
-        inputLayer->setBias(0.0);
         for (int i = 0; i < this->layerSizes_[0]; i++) {
             for (int j = 0; j < this->layerSizes_[0]; j++) {
                 inputLayer->setWeight(i, j, 1.0);
             }
+            inputLayer->setBias(i, 0.0);
         }
 
-        double lowerBound = std::numeric_limits<double>::min();
-        double upperBound = std::numeric_limits<double>::max();
+        double lowerBound = -1000.0;
+        double upperBound = 1000.0;
         std::uniform_real_distribution<double> rand(lowerBound, upperBound);
         std::default_random_engine re;
         re.seed(67);
@@ -246,7 +243,6 @@ namespace Structures {
         // For rest of layers, apply a random weight and bias
         for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
             Layer* currentLayer = this->layers_[layerIndex];
-            currentLayer->setBias(rand(re));
             for (int currLayerNeuronIndex = 0; currLayerNeuronIndex < 
                 this->layerSizes_[layerIndex]; currLayerNeuronIndex++) {
                 for (int prevLayerNeuronIndex = 0; prevLayerNeuronIndex < 
@@ -254,6 +250,7 @@ namespace Structures {
                     currentLayer->setWeight(currLayerNeuronIndex, prevLayerNeuronIndex,
                         rand(re));
                 }
+                currentLayer->setBias(currLayerNeuronIndex, rand(re));
             }
         }
     }
@@ -263,9 +260,47 @@ namespace Structures {
         return pow(expected - this->layers_[layerIndex]->getNeuronValue(neuronIndex), 2.0);
     }
 
-    void NeuralNetwork::backPropagate(double* expectedOutput)
+    void NeuralNetwork::backPropagate(double* expectedOutput, Matrix** weightsBuf, double***
+        biasBuf)
     {
-        return;
+        double* expected = new double[this->layerSizes_[this->numLayers_ - 1]];
+        for (int i = 0; i < this->layerSizes_[this->numLayers_ - 1]; i++) {
+            expected[i] = expectedOutput[i];
+        }
+
+        for (int layerIndex = this->numLayers_ - 1; layerIndex > 0; layerIndex--) {
+            Layer* currentLayer = this->getLayer(layerIndex);
+            double* nextExpected = new double[currentLayer->getNeuronsSize()];
+            for (int currLayerIndex = 0; currLayerIndex < currentLayer->getNeuronsSize(); 
+                currLayerIndex++) {
+                double dc_da = 2 * (currentLayer->getNeuronValue(currLayerIndex) - 
+                    expected[currLayerIndex]);
+                double da_dz = 
+                    reluDerivative(currentLayer->getNeuronValue(currLayerIndex));
+                nextExpected[currLayerIndex] = dc_da * da_dz;
+                for (int prevLayerIndex = 0; prevLayerIndex < 
+                    currentLayer->getPrevLayerNeuronsSize(); prevLayerIndex++) {
+                    double dz_dw = 
+                        this->layers_[layerIndex - 1]->getNeuronValue(prevLayerIndex);
+                    weightsBuf[layerIndex]->put(currLayerIndex, prevLayerIndex,
+                        dc_da * da_dz * dz_dw);
+                }
+
+                (*biasBuf)[layerIndex][currLayerIndex] = dc_da * da_dz;
+            }
+
+            delete[] expected;
+            if (layerIndex > 1) {
+                Layer* nextLayer = this->layers_[layerIndex - 1];
+                expected = new double[nextLayer->getNeuronsSize()]();
+                for (int i = 0; i < currentLayer->getNeuronsSize(); i++) {
+                    for (int j = 0; j < nextLayer->getNeuronsSize(); j++) {
+                        expected[j] += nextExpected[i] * currentLayer->getWeight(i,j);
+                    }
+                }
+            }
+            delete[] nextExpected;
+        }
     }
 
     NeuralNetwork::NeuralNetwork(size_t numLayers, size_t* layerSizes)
@@ -283,12 +318,30 @@ namespace Structures {
 
     void NeuralNetwork::getOutput(float** buf)
     {
-        return;
+        Layer* outputLayer = this->layers_[this->numLayers_ - 1];
+        for (int i = 0; i < outputLayer->getNeuronsSize(); i++) {
+            (*buf)[i] = outputLayer->getNeuronValue(i);
+        }
     }
 
     void NeuralNetwork::feedForward(Matrix* input)
     {
-        return;
+        // Manually set the values in the first layer
+        double* inputVector = new double[this->layerSizes_[0]];
+        for (int i = 0; i < this->layerSizes_[0]; i++) {
+            inputVector[i] = input->get(i / 28, i % 28);
+        }
+        this->getLayer(0)->setNeuronValues(inputVector);
+        delete[] inputVector;
+
+        // Traverse from the second layer to end and compute neuron values 
+        for (int i = 1; i < this->numLayers_; i++) {
+            Layer* currentLayer = this->layers_[i];
+            float* prevLayerNeuronValues = new float[this->layerSizes_[i - 1]];
+            this->layers_[i - 1]->getNeuronValues(&prevLayerNeuronValues);
+            currentLayer->computeNeuronValues(&prevLayerNeuronValues);
+            delete[] prevLayerNeuronValues;
+        }
     }
 
     Layer* NeuralNetwork::getLayer(int layerIndex)
@@ -297,6 +350,71 @@ namespace Structures {
             throw std::invalid_argument("Layer index is invalid");
 
         return this->layers_[layerIndex];
+    }
+
+    void NeuralNetwork::train(std::vector<Image*> observations, int n)
+    {
+        Matrix** finalWeights = new Matrix*[this->numLayers_];
+        double** finalBiases = new double*[this->numLayers_];
+        for (int i = 1; i < this->numLayers_; i++) {
+            size_t numRows = this->layers_[i]->getNeuronsSize();
+            size_t numCols = this->layers_[i]->getPrevLayerNeuronsSize();
+            finalWeights[i] = new Matrix(numRows, numCols);
+            finalBiases[i] = new double[numRows];
+        }
+
+        for (int i = 0; i < n; i++) {
+            Image* current = observations[i];
+            int expected = current->getNumber();
+            double* expectedOutput = new double[this->layerSizes_[this->numLayers_ - 1]]();
+            expectedOutput[expected - 1] = 1.0;
+
+            Matrix** weightsBuf = new Matrix*[this->numLayers_];
+            double** biasBuf = new double*[this->numLayers_];
+
+            for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
+                size_t numRows = this->layers_[layerIndex]->getNeuronsSize();
+                size_t numCols = this->layers_[layerIndex]->getPrevLayerNeuronsSize();
+                weightsBuf[layerIndex] = new Matrix(numRows, numCols);
+
+                biasBuf[layerIndex] = new double[numRows]();
+            }
+
+            this->feedForward(current->getCellValues());
+            this->backPropagate(expectedOutput, weightsBuf, &biasBuf);
+
+            for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
+                size_t numRows = this->layers_[layerIndex]->getNeuronsSize();
+                size_t numCols = this->layers_[layerIndex]->getPrevLayerNeuronsSize();
+
+                for (int r = 0; r < numRows; r++) {
+                    for (int c = 0; c < numCols; c++) {
+                        double weightDelta = weightsBuf[layerIndex]->get(r, c);
+                        double currentWeight = finalWeights[layerIndex]->get(r,c);
+                        finalWeights[layerIndex]->put(r, c, currentWeight + weightDelta);
+                    }
+
+                    double biasDelta = biasBuf[layerIndex][r];
+                    finalBiases[layerIndex][r] += biasDelta;
+                }
+            }
+        }
+
+        for (int i = 1; i < this->numLayers_; i++) {
+            size_t numRows = this->layers_[i]->getNeuronsSize();
+            size_t numCols = this->layers_[i]->getPrevLayerNeuronsSize();
+            for (int r = 0; r < numRows; r++) {
+                for (int c = 0; c < numCols; c++) {
+                    this->layers_[i]->setWeight(r, c, finalWeights[i]->get(r, c));
+                }
+                this->layers_[i]->setBias(r, finalBiases[i][r]);
+            }
+            delete finalWeights[i];
+            delete[] finalBiases[i];
+        }
+
+        delete[] finalWeights;
+        delete[] finalBiases;
     }
 
     NeuralNetwork::~NeuralNetwork()
@@ -333,7 +451,7 @@ namespace Structures {
      * @param length the size of vectorA and vectorB
      * @returns the dot product of vectorA and vectorB
      */
-    double dotProduct(double* vectorA, double* vectorB, int length)
+    double dotProduct(double* vectorA, float* vectorB, int length)
     {
         double sum = 0;
         for (int i = 0; i < length; i++) {
