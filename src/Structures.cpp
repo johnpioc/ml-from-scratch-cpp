@@ -5,16 +5,16 @@
 #include <stdexcept>
 #include <algorithm>
 #include <random>
-#include <limits>
 
 #include "Structures.h"
 
 namespace Structures {
     // HELPER FUNCTION DECLARATIONS
     void printSeperator(int numCols, int* colSpaces);
-    double dotProduct(double* vectorA, float* vectorB, int length);
-    double relu(double raw);
-    double reluDerivative(double raw);
+    void relu(Matrix src, Matrix* dest);
+    void reluDerivative(Matrix src, Matrix* dest);
+    void softmax(Matrix src, Matrix* dest);
+    void collapseCols(Matrix src, Matrix* dest);
 
     // ===========================================================================================
     // MATRIX METHODS
@@ -44,6 +44,103 @@ namespace Structures {
         }
     }
 
+    Matrix Matrix::operator*(const Matrix& other)
+    {
+        if (!canMultiply(other)) {
+            throw std::invalid_argument("Cannot multiply matrices with different shapes");
+        }
+
+        Matrix product = Matrix(this->numRows_, other.numCols_);
+        Matrix otherMatrix(other);
+
+        for (int r = 0; r < this->numRows_; r++) {
+            for (int c = 0; c < other.numCols_; c++) {
+                double dotProduct = 0;
+                for (int i = 0; i < this->numCols_; i++) {
+                    dotProduct += this->get(r, i) * otherMatrix.get(i, c);
+                }
+                product.put(r, c, dotProduct);
+            }
+        }
+
+        return product;
+    }
+
+    Matrix Matrix::operator*(double scalar)
+    {
+        Matrix product(this->numRows_, this->numCols_);
+
+        for (int r = 0; r < this->numRows_; r++) {
+            for (int c = 0; c < this->numCols_; c++) {
+                product.put(r,c, this->get(r,c) * scalar);
+            }
+        }
+
+        return product;
+    }
+
+    Matrix Matrix::operator+(const Matrix& other)
+    {
+        if (!canAdd(other)) {
+            throw std::invalid_argument("Cannot add matrices with different shapes");
+        }
+
+        Matrix otherMatrix(other);
+        Matrix sum = Matrix(this->numRows_, this->numCols_);
+
+        for (int r = 0; r < this->numRows_; r++) {
+            for (int c = 0; c < this->numCols_; c++) {
+                sum.put(r,c, this->get(r,c) + otherMatrix.get(r,c));
+            }
+        }
+
+        return sum;
+    }
+
+    Matrix Matrix::operator-(const Matrix& other)
+    {
+        if (!canAdd(other)) {
+            throw std::invalid_argument("Cannot subtract matrices with different shapes");
+        }
+
+        Matrix otherMatrix(other);
+        Matrix difference = Matrix(this->numRows_, this->numCols_);
+
+        for (int r = 0; r < this->numRows_; r++) {
+            for (int c = 0; c < this->numCols_; c++) {
+                difference.put(r,c, this->get(r,c) - otherMatrix.get(r,c));
+            }
+        }
+
+        return difference;
+    }
+
+    Matrix Matrix::transpose()
+    {
+        Matrix transposed(this->numCols_, this->numRows_);
+
+        for (int r = 0; r < this->numRows_; r++) {
+            for (int c = 0; c < this->numCols_; c++) {
+                transposed.put(c,r, this->get(r,c));
+            }
+        }
+
+        return transposed;
+    }
+
+    bool Matrix::canMultiply(const Matrix& other)
+    {
+        Matrix otherMatrix(other);
+        return this->numRows_ == otherMatrix.getNumCols();
+    }
+
+    bool Matrix::canAdd(const Matrix& other)
+    {
+        Matrix otherMatrix(other);
+        return (this->numRows_ == otherMatrix.getNumRows())
+            && (this->numCols_ == otherMatrix.getNumCols());
+    }
+
     size_t Matrix::getNumRows() { return this->numRows_; }
     size_t Matrix::getNumCols() { return this->numCols_; }
     double** Matrix::getData() { return this->data_; }
@@ -59,15 +156,6 @@ namespace Structures {
         }
 
         return this->data_[colIndex][rowIndex];
-    }
-
-    void Matrix::getRow(int rowIndex, double** buf)
-    {
-        (*buf) = new double[this->numCols_];
-
-        for (int colIndex = 0; colIndex < this->numCols_; colIndex++) {
-            (*buf)[colIndex] = this->get(rowIndex, colIndex);
-        }
     }
 
     void Matrix::put(int rowIndex, int colIndex, double value)
@@ -137,87 +225,52 @@ namespace Structures {
     // ===========================================================================================
     // LAYER METHODS
     // ===========================================================================================
-    void Layer::applySoftmaxDistribution(double* raw)
-    {
-        double denom = 0;
-        for (int i = 0; i < this->neuronsSize_; i++) {
-            denom += std::exp(raw[i]);
-        }
-
-        for (int i = 0; i < this->neuronsSize_; i++) {
-            this->neuronValues_[i] = std::exp(raw[i]) / denom;
-        }
-    }
     Layer::Layer(size_t neuronsSize, size_t prevLayerNeuronsSize)
     {
         this->neuronsSize_ = neuronsSize;
         this->prevLayerNeuronsSize_ = prevLayerNeuronsSize;
 
-        this->neuronValues_ = new float[this->neuronsSize_];
-        this->weights_ = new Matrix(this->neuronsSize_, this->prevLayerNeuronsSize_);
-        this->bias_ = new double[this->neuronsSize_];
+        this->neuronValues_ = Matrix(BATCH_SIZE, this->neuronsSize_);
+        this->weights_ = Matrix(this->neuronsSize_, this->prevLayerNeuronsSize_);
+        this->bias_ = Matrix(1, this->neuronsSize_);
+    }
+
+    Matrix Layer::getNeuronValues() { return this->neuronValues_; };
+
+    void Layer::setNeuronValues(Matrix buf)
+    {
+        for (int r = 0; r < BATCH_SIZE; r++) {
+            for (int c = 0; c < this->neuronsSize_; c++) {
+                this->neuronValues_.put(r, c, buf.get(r,c));
+            }
+        }
     }
 
     size_t Layer::getNeuronsSize() { return this->neuronsSize_; }
     size_t Layer::getPrevLayerNeuronsSize() { return this->prevLayerNeuronsSize_; }
+    Matrix Layer::getWeights() { return this->weights_; }
 
-    void Layer::setWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex, double value)
+    void Layer::adjustWeights(Matrix delta)
     {
-        this->weights_->put(currLayerNeuronIndex, prevLayerNeuronIndex, value);
+        this->weights_ = this->weights_ - (delta * LEARNING_RATE);
     }
 
-    double Layer::getWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex)
+    void Layer::adjustBias(Matrix delta)
     {
-        return this->weights_->get(currLayerNeuronIndex, prevLayerNeuronIndex);
+        this->bias_ = this->bias_ - (delta * LEARNING_RATE);
     }
 
-    void Layer::computeNeuronValues(float** prevLayerNeuronValues)
+    void Layer::computeNeuronValues(Matrix previousLayerNeuronValues)
     {
-        double* raw = new double[this->getNeuronsSize()];
-        for (int i = 0; i < this->neuronsSize_; i++) {
-            double* currentWeights;
-            this->weights_->getRow(i, &currentWeights);
-            raw[i] = 
-                relu(
-                    dotProduct(
-                        currentWeights, (*prevLayerNeuronValues),
-                        this->prevLayerNeuronsSize_
-                    ) - this->bias_[i]
-                );
-            delete[] currentWeights;
+        Matrix biasMatrix(BATCH_SIZE, this->neuronsSize_);
+        for (int r = 0; r < BATCH_SIZE; r++) {
+            for (int c = 0; c < this->neuronsSize_; c++) {
+                biasMatrix.put(r, c, this->bias_.get(0, c));
+            }
         }
 
-        this->applySoftmaxDistribution(raw);
-        delete[] raw;
-    }
-
-    void Layer::setNeuronValues(double* values)
-    {
-        this->applySoftmaxDistribution(values);
-    }
-
-    float Layer::getNeuronValue(int neuronIndex)
-    {
-        if (neuronIndex < 0 || neuronIndex >= this->neuronsSize_)
-            throw std::invalid_argument("invalid neuron index");
-
-        return this->neuronValues_[neuronIndex];
-    }
-
-    void Layer::getNeuronValues(float** buf)
-    {
-        for (int i = 0; i < this->neuronsSize_; i++) {
-            (*buf)[i] = this->getNeuronValue(i);
-        }
-    }
-
-    void Layer::setBias(int neuronIndex, double bias) { this->bias_[neuronIndex] = bias; }
-    double Layer::getBias(int neuronIndex) { return this->bias_[neuronIndex]; }
-
-    Layer::~Layer()
-    {
-        delete this->weights_;
-        delete[] neuronValues_;
+        Matrix neuronValues = (this->weights_ * previousLayerNeuronValues) + biasMatrix;
+        relu(neuronValues, &this->neuronValues_);
     }
 
     // ===========================================================================================
@@ -225,81 +278,34 @@ namespace Structures {
     // ===========================================================================================
     void NeuralNetwork::initialiseParams()
     {
-        // Apply a weight of 1 and a bias of 0 to the first layer as its the input layer
-        Layer* inputLayer = this->layers_[0];
-        for (int i = 0; i < this->layerSizes_[0]; i++) {
-            for (int j = 0; j < this->layerSizes_[0]; j++) {
-                inputLayer->setWeight(i, j, 1.0);
-            }
-            inputLayer->setBias(i, 0.0);
-        }
-
-        double lowerBound = -1000.0;
-        double upperBound = 1000.0;
-        std::uniform_real_distribution<double> rand(lowerBound, upperBound);
-        std::default_random_engine re;
-        re.seed(67);
-
-        // For rest of layers, apply a random weight and bias
-        for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
-            Layer* currentLayer = this->layers_[layerIndex];
-            for (int currLayerNeuronIndex = 0; currLayerNeuronIndex < 
-                this->layerSizes_[layerIndex]; currLayerNeuronIndex++) {
-                for (int prevLayerNeuronIndex = 0; prevLayerNeuronIndex < 
-                    this->layerSizes_[layerIndex - 1]; prevLayerNeuronIndex++) {
-                    currentLayer->setWeight(currLayerNeuronIndex, prevLayerNeuronIndex,
-                        rand(re));
-                }
-                currentLayer->setBias(currLayerNeuronIndex, rand(re));
-            }
-        }
     }
 
-    double NeuralNetwork::cost(int layerIndex, int neuronIndex, double expected)
+    void NeuralNetwork::backPropagate(Matrix expected)
     {
-        return pow(expected - this->layers_[layerIndex]->getNeuronValue(neuronIndex), 2.0);
-    }
+        Layer* outputLayer = this->layers_[this->numLayers_ - 1];
+        Matrix softmaxedOutput(outputLayer->getNeuronsSize(),
+            outputLayer->getPrevLayerNeuronsSize());
+        softmax(outputLayer->getNeuronValues(), &softmaxedOutput);
 
-    void NeuralNetwork::backPropagate(double* expectedOutput, Matrix** weightsBuf, double***
-        biasBuf)
-    {
-        double* expected = new double[this->layerSizes_[this->numLayers_ - 1]];
-        for (int i = 0; i < this->layerSizes_[this->numLayers_ - 1]; i++) {
-            expected[i] = expectedOutput[i];
-        }
+        Matrix dz = softmaxedOutput - expected;
 
         for (int layerIndex = this->numLayers_ - 1; layerIndex > 0; layerIndex--) {
-            Layer* currentLayer = this->getLayer(layerIndex);
-            double* nextExpected = new double[currentLayer->getNeuronsSize()];
-            for (int currLayerIndex = 0; currLayerIndex < currentLayer->getNeuronsSize(); 
-                currLayerIndex++) {
-                double dc_da = 2 * (currentLayer->getNeuronValue(currLayerIndex) - 
-                    expected[currLayerIndex]);
-                double da_dz = 
-                    reluDerivative(currentLayer->getNeuronValue(currLayerIndex));
-                nextExpected[currLayerIndex] = dc_da * da_dz;
-                for (int prevLayerIndex = 0; prevLayerIndex < 
-                    currentLayer->getPrevLayerNeuronsSize(); prevLayerIndex++) {
-                    double dz_dw = 
-                        this->layers_[layerIndex - 1]->getNeuronValue(prevLayerIndex);
-                    weightsBuf[layerIndex]->put(currLayerIndex, prevLayerIndex,
-                        dc_da * da_dz * dz_dw);
-                }
+            Layer* prevLayer = this->layers_[layerIndex - 1];
+            Matrix prevLayerNeuronValues = prevLayer->getNeuronValues();
+            Matrix dw = (dz * ((double) 1 / BATCH_SIZE)) * prevLayerNeuronValues;
 
-                (*biasBuf)[layerIndex][currLayerIndex] = dc_da * da_dz;
-            }
+            Matrix collapsedDz(dz.getNumRows(), dz.getNumCols());
+            collapseCols(dz, &collapsedDz);
+            Matrix db = collapsedDz * ((double) 1 / BATCH_SIZE);
 
-            delete[] expected;
-            if (layerIndex > 1) {
-                Layer* nextLayer = this->layers_[layerIndex - 1];
-                expected = new double[nextLayer->getNeuronsSize()]();
-                for (int i = 0; i < currentLayer->getNeuronsSize(); i++) {
-                    for (int j = 0; j < nextLayer->getNeuronsSize(); j++) {
-                        expected[j] += nextExpected[i] * currentLayer->getWeight(i,j);
-                    }
-                }
-            }
-            delete[] nextExpected;
+            Layer* currentLayer = this->layers_[layerIndex];
+            currentLayer->adjustWeights(dw);
+            currentLayer->adjustBias(db);
+
+            Matrix activationDerivative(dz.getNumCols(), dz.getNumRows());
+            reluDerivative(dz, &activationDerivative);
+            Matrix newDz = currentLayer->getWeights().transpose() * dz * activationDerivative;
+            dz = newDz;
         }
     }
 
@@ -311,36 +317,20 @@ namespace Structures {
         for (int i = 0; i < this->numLayers_; i++) {
             this->layerSizes_[i] = layerSizes[i];
             this->layers_[i] = 
-                new Layer(layerSizes[i], i == 0 ? layerSizes[0] : layerSizes[i - 1]);
+                new Layer(i == 0 ? BATCH_SIZE : layerSizes[i - 1], layerSizes[i]);
         }
         this->initialiseParams();
     }
 
-    void NeuralNetwork::getOutput(float** buf)
+    void NeuralNetwork::feedForward(Matrix batch)
     {
-        Layer* outputLayer = this->layers_[this->numLayers_ - 1];
-        for (int i = 0; i < outputLayer->getNeuronsSize(); i++) {
-            (*buf)[i] = outputLayer->getNeuronValue(i);
-        }
-    }
+        Layer* inputLayer = this->layers_[0];
+        inputLayer->setNeuronValues(batch);
 
-    void NeuralNetwork::feedForward(Matrix* input)
-    {
-        // Manually set the values in the first layer
-        double* inputVector = new double[this->layerSizes_[0]];
-        for (int i = 0; i < this->layerSizes_[0]; i++) {
-            inputVector[i] = input->get(i / 28, i % 28);
-        }
-        this->getLayer(0)->setNeuronValues(inputVector);
-        delete[] inputVector;
-
-        // Traverse from the second layer to end and compute neuron values 
-        for (int i = 1; i < this->numLayers_; i++) {
-            Layer* currentLayer = this->layers_[i];
-            float* prevLayerNeuronValues = new float[this->layerSizes_[i - 1]];
-            this->layers_[i - 1]->getNeuronValues(&prevLayerNeuronValues);
-            currentLayer->computeNeuronValues(&prevLayerNeuronValues);
-            delete[] prevLayerNeuronValues;
+        for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
+            Layer* currentLayer = this->getLayer(layerIndex);
+            Layer* previousLayer = this->getLayer(layerIndex - 1);
+            currentLayer->computeNeuronValues(previousLayer->getNeuronValues());
         }
     }
 
@@ -352,69 +342,17 @@ namespace Structures {
         return this->layers_[layerIndex];
     }
 
-    void NeuralNetwork::train(std::vector<Image*> observations, int n)
+    void NeuralNetwork::train(std::vector<Matrix> observations, std::vector<Matrix> expected)
     {
-        Matrix** finalWeights = new Matrix*[this->numLayers_];
-        double** finalBiases = new double*[this->numLayers_];
-        for (int i = 1; i < this->numLayers_; i++) {
-            size_t numRows = this->layers_[i]->getNeuronsSize();
-            size_t numCols = this->layers_[i]->getPrevLayerNeuronsSize();
-            finalWeights[i] = new Matrix(numRows, numCols);
-            finalBiases[i] = new double[numRows];
+        int numOfBatches = observations.size();
+
+        for (int batchIndex = 0; batchIndex < numOfBatches; batchIndex++) {
+            Matrix currentBatch = observations[batchIndex];
+            Matrix currentExpectedMatrix = expected[batchIndex];
+
+            this->feedForward(currentBatch);
+            this->backPropagate(currentExpectedMatrix);
         }
-
-        for (int i = 0; i < n; i++) {
-            Image* current = observations[i];
-            int expected = current->getNumber();
-            double* expectedOutput = new double[this->layerSizes_[this->numLayers_ - 1]]();
-            expectedOutput[expected - 1] = 1.0;
-
-            Matrix** weightsBuf = new Matrix*[this->numLayers_];
-            double** biasBuf = new double*[this->numLayers_];
-
-            for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
-                size_t numRows = this->layers_[layerIndex]->getNeuronsSize();
-                size_t numCols = this->layers_[layerIndex]->getPrevLayerNeuronsSize();
-                weightsBuf[layerIndex] = new Matrix(numRows, numCols);
-
-                biasBuf[layerIndex] = new double[numRows]();
-            }
-
-            this->feedForward(current->getCellValues());
-            this->backPropagate(expectedOutput, weightsBuf, &biasBuf);
-
-            for (int layerIndex = 1; layerIndex < this->numLayers_; layerIndex++) {
-                size_t numRows = this->layers_[layerIndex]->getNeuronsSize();
-                size_t numCols = this->layers_[layerIndex]->getPrevLayerNeuronsSize();
-
-                for (int r = 0; r < numRows; r++) {
-                    for (int c = 0; c < numCols; c++) {
-                        double weightDelta = weightsBuf[layerIndex]->get(r, c);
-                        double currentWeight = finalWeights[layerIndex]->get(r,c);
-                        finalWeights[layerIndex]->put(r, c, currentWeight + weightDelta);
-                    }
-
-                    double biasDelta = biasBuf[layerIndex][r];
-                    finalBiases[layerIndex][r] += biasDelta;
-                }
-            }
-        }
-
-        for (int i = 1; i < this->numLayers_; i++) {
-            size_t numRows = this->layers_[i]->getNeuronsSize();
-            size_t numCols = this->layers_[i]->getPrevLayerNeuronsSize();
-            for (int r = 0; r < numRows; r++) {
-                for (int c = 0; c < numCols; c++) {
-                    this->layers_[i]->setWeight(r, c, finalWeights[i]->get(r, c));
-                }
-                this->layers_[i]->setBias(r, finalBiases[i][r]);
-            }
-            delete finalWeights[i];
-            delete[] finalBiases[i];
-        }
-
-        delete[] finalWeights;
-        delete[] finalBiases;
     }
 
     NeuralNetwork::~NeuralNetwork()
@@ -444,31 +382,51 @@ namespace Structures {
         std::cout << "_\n";
     }
 
-    /**
-     * @brief Performs the dot product on two vectors
-     * @param vectorA an array of doubles
-     * @param vectorB an array of doubles
-     * @param length the size of vectorA and vectorB
-     * @returns the dot product of vectorA and vectorB
-     */
-    double dotProduct(double* vectorA, float* vectorB, int length)
-    {
-        double sum = 0;
-        for (int i = 0; i < length; i++) {
-            sum += vectorA[i] * vectorB[i];
-        }
-        return sum;
-    }
-
     /** Rectified linear unit (squishification function for neuron values) */
-    double relu(double raw)
+    void relu(Matrix src, Matrix* dest)
     {
-        return (raw > 0) ? raw : 0;
+        for (int r = 0; r < src.getNumRows(); r++) {
+            for (int c = 0; c < src.getNumCols(); c++) {
+                dest->put(r, c, src.get(r, c) > 0 ? src.get(r, c) : 0);
+            }
+        }
     }
 
     /** Derivative of the relu */
-    double reluDerivative(double raw)
+    void reluDerivative(Matrix src, Matrix* dest)
     {
-        return (raw > 0) ? 1 : 0;
+        for (int r = 0; r < src.getNumRows(); r++) {
+            for (int c = 0; c < src.getNumCols(); c++) {
+                dest->put(r, c, src.get(r, c) > 0 ? 1 : 0);
+            }
+        }
+    }
+
+    /** Applies the softmax function to a given matrix */
+    void softmax(Matrix src, Matrix* dest)
+    {
+        for (int r = 0; r < src.getNumRows(); r++) {
+            double denom = 0;
+            for (int c = 0; c < src.getNumCols(); c++) {
+                denom += std::exp(src.get(r,c));
+            }
+
+            for (int c = 0; c < src.getNumCols(); c++) {
+                dest->put(r,c, std::exp(src.get(r,c)) / denom);
+            }
+        }
+    }
+
+    /** Sums up all row vectors in a single number and outputs a (r x 1) matrix */
+    void collapseCols(Matrix src, Matrix* dest)
+    {
+        for (int r = 0; r < src.getNumRows(); r++) {
+            double sum = 0;
+            for (int c = 0; c < src.getNumCols(); c++) {
+                sum += src.get(r,c);
+            }
+
+            dest->put(r, 0, sum);
+        }
     }
 }

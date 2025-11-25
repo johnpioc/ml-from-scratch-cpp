@@ -3,9 +3,10 @@
 #include <iostream>
 #include <cstdint>
 
-namespace Structures {
+#define BATCH_SIZE 1000
+#define LEARNING_RATE 1.0
 
-    
+namespace Structures {
     /**
      * Matrix that stores double values
      */
@@ -34,6 +35,29 @@ namespace Structures {
          */
         Matrix(size_t numRows, size_t numCols, double** values);
 
+        // Operator Overloads
+        Matrix operator*(const Matrix& other);
+        Matrix operator*(const double scalar);
+        Matrix operator+(const Matrix& other);
+        Matrix operator-(const Matrix& other);
+
+        /**
+         * @brief constructs a transposed version of this matrix
+         * @returns a new matrix object that is the tranposed version
+         */
+        Matrix transpose();
+
+        /**
+         * Returns true if this matrix and given matrix can be multiplied, otherwise false
+         */
+        bool canMultiply(const Matrix& other);
+
+        /**
+         * Returns true if this matrix and given matrix can be added (or subtracted), otherwise
+         * false
+         */
+        bool canAdd(const Matrix& other);
+
         /** Returns the number of rows inside the matrix */
         size_t getNumRows();
         /** Returns the number of columns inside the matrix */
@@ -48,14 +72,6 @@ namespace Structures {
          * @return the cell value corresponding to the row and column index
          */
         double get(int rowIndex, int colIndex);
-
-        /**
-         * @brief returns the given values of a row in the matrix
-         * @param rowIndex the index of the row we want to get the values from
-         * @param buf the pointer to an allocated array of doubles that will be storing the row
-         * values
-         */
-        void getRow(int rowIndex, double** buf);
 
         /**
          * @brief inserts/updates a given cell in the matrix
@@ -73,109 +89,59 @@ namespace Structures {
     };
 
     /**
-     * Contains data for a single image observation
-     */
-    struct Image {
-    private:
-        int number_;
-        Matrix* cellValues_;
-
-    public:
-        Image(int number, double** values) {
-            this->number_ = number;
-            this->cellValues_ = new Matrix(28, 28, values);
-        }
-
-        int getNumber() { return this->number_; }
-        Matrix* getCellValues() { return this->cellValues_; }
-    };
-
-    /**
      * Layer of neurons inside a Neural Network
      */
     struct Layer {
     private:
-        // Number of neurons inside the layer
+        // The number of neurons in this layer
         size_t neuronsSize_;
-        // Number of neurons in previous layer
+        // The number of neurons in the previous layer
         size_t prevLayerNeuronsSize_;
-        // Matrix of connection weights from the previous layer to this layer
-        Matrix* weights_;
-        // The values of the neurons of this layer
-        float* neuronValues_;
-        // The biases associated with each neuron in this layer
-        double* bias_;
+        // The neuron values for each observation in a batch
+        Matrix neuronValues_;
+        // The weights to the connections from previous layer to this layer
+        Matrix weights_;
+        // The bias associated with each neuron in this layer
+        Matrix bias_;
 
     public:
         /**
-         */
-        void applySoftmaxDistribution(double* raw);
-
-        /**
-         * @brief constructs a Layer struct and initialises neuron values to 0.0
-         * @param neuronsSize the number of neurons inside the layer
-         * @param prevLayerNeuronsSize the number of neurons inside the previous layer
+         * @brief constructs a new layer
+         * @param neuronsSize the number of neurons to be stored in this layer
+         * @param prevLayerNeuronsSize the number of neurons that are stored in the previous layer
          */
         Layer(size_t neuronsSize, size_t prevLayerNeuronsSize);
 
-        /** Retruns the number of neurons in this layer */
+        /** Returns a matrix of the neuron values in this layer */
+        Matrix getNeuronValues();
+        /** Manually sets the neuron values in this layer */
+        void setNeuronValues(Matrix buf);
+        /** Returns the number of neurons in this layer */
         size_t getNeuronsSize();
-        /** Returns the number of neurons in previous layer */
+        /** Returns the number of neurons in the previous layer */
         size_t getPrevLayerNeuronsSize();
+        /** Returns the weights associated with this layer and previous */
+        Matrix getWeights();
 
         /**
-         * @brief Sets the weight for a given connection between a neuron in the previous layer and
-         * a neuron in this layer
-         * @param currLayerNeuronIndex the index of the neuron in this layer
-         * @param prevLayerNeuronIndex the index of the neuron in the previous layer
-         * @param value the weight of the connection between the two neurons
+         * @brief adjusts the weights in this layer
+         * @param delta a matrix with identical shape to the weights that will subtract the current
+         * weight values
          */
-        void setWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex, double value);
+        void adjustWeights(Matrix delta);
 
         /**
-         * @brief Retrives the weight for a given connection between a neuron in the previous layer
-         * and a neuron in this layer
-         * @param currLayerNeuronIndex the index of the neuron in this layer
-         * @param prevLayerNeuronIndex the index of the neuron in the previous layer
-         * @returns a double value representing the weight of the connection
+         * @brief adjusts the biases in this layer
+         * @param delta a matrix with identical shape to the biases that will subtract the current
+         * bias values
          */
-        double getWeight(int currLayerNeuronIndex, int prevLayerNeuronIndex);
+        void adjustBias(Matrix delta);
 
         /**
-         * @brief Computes and saves the neuron values for this layer based on connection weights
-         * and a given array of neuron values from the previous layer
-         * @param prevLayerNeuronValues a pointer to an array of doubles that represent the neuron
-         * values from the previous layer
+         * @brief Computes the neuron values for this layer using weights, previous layer neuron
+         * values and biases
          */
-        void computeNeuronValues(float** prevLayerNeuronValues);
-
-        /**
-         * @brief Directly sets the neuron values inside this layer
-         * @param values a pointer to an array of doubles that represent the values for the neurons
-         * in this layer
-         */
-        void setNeuronValues(double* values);
-
-        /**
-         * @brief Retrives the value of a given neuron
-         * @param neuronIndex the index of the neuron in this layer who's value we want to retrieve
-         */
-        float getNeuronValue(int neuronIndex);
-
-        /**
-         * @brief Retrives the values of all the neurons in the layer
-         * @param buf a pointer to an allocated array of doubles which will store the values of the
-         * neurons in this layer
-         */
-        void getNeuronValues(float** buf);
-
-        /** Sets the bias associated with a neuron in this layer */
-        void setBias(int neuronIndex, double bias);
-        /** Returns the bias associated with the layer */
-        double getBias(int neuronIndex);
-
-        /** Destructor */
-        ~Layer();
+        void computeNeuronValues(Matrix previousLayerNeuronValues);
     };
 
     struct NeuralNetwork {
@@ -190,21 +156,7 @@ namespace Structures {
         /** Initialises model parameters by generating random values for weights and biases */
         void initialiseParams();
 
-        /**
-         * @brief computes the cost of a given neuron inside the network
-         * @param layerIndex the index of the layer that contains the neuron of interest
-         * @param neuronIndex the index of the neuron inside the layer
-         * @param expected the expected value of the neuron of interest
-         * @returns a double value which represents the cost between the neuron's actual value
-         * versus the expected
-         */
-        double cost(int layerIndex, int neuronIndex, double expected);
-
-        /**
-         * @brief Performs the back-propagation algorithm by taking in an array of expected output
-         * neuron values and traverses each layer from output to input adjusting weights and biases
-         */
-        void backPropagate(double* expectedOutput, Matrix** weightsBuf, double*** biasBuf);
+        void backPropagate(Matrix expected);
 
     public:
         /**
@@ -216,22 +168,15 @@ namespace Structures {
         NeuralNetwork(size_t numLayers, size_t* layerSizes);
 
         /**
-         * @brief Retrives the output layer neuron values formatted as a probability distribution
-         * @param buf a pointer to an allocated array of floats which will store the softmaxed
-         * values for each neuron
-         */
-        void getOutput(float** buf);
-
-        /**
          * @brief Performs the feed-forward algorithm, taking in a matrix of inputs for the first
          * layer, then computes and saves neuron values for subsequent layers up to the output
          */
-        void feedForward(Matrix* input);
+        void feedForward(Matrix batch);
 
         /** Retrives a layer from the network */
         Layer* getLayer(int layerIndex);
 
-        void train(std::vector<Image*> observations, int n);
+        void train(std::vector<Matrix> observations, std::vector<Matrix> expected);
 
         /** Destructor */
         ~NeuralNetwork();

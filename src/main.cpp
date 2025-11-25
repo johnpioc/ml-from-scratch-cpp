@@ -6,66 +6,63 @@
 
 #include "Structures.h"
 
-#define NUM_COLS 28
-#define NUM_ROWS 28
+#define OBS_SIZE 28 * 28
+#define TOTAL_NUM_OF_OBSERVATIONS 60000
+#define OUTPUT_LAYER_SIZE 10
 
-std::vector<Structures::Image*> processTrainingData() 
+void processTrainingData(std::vector<Structures::Matrix> observations,
+    std::vector<Structures::Matrix> expected)
 {
-    std::vector<Structures::Image*> data;
-    std::string line;
-
     std::ifstream trainingFile("../data/mnist_train.csv");
     if (!trainingFile.is_open()) {
         throw std::runtime_error("training csv file cannot be opened");
     }
 
-    while (std::getline(trainingFile, line)) {
-        double** values = new double*[NUM_COLS];
-        for (int i = 0; i < NUM_COLS; i++) {
-            values[i] = new double[NUM_ROWS];
+    for (int batchIndex = 0; batchIndex < TOTAL_NUM_OF_OBSERVATIONS / BATCH_SIZE; batchIndex++) {
+        double** observationValues = new double*[BATCH_SIZE];
+        double** expectedValues = new double*[BATCH_SIZE];
+        for (int i = 0; i < BATCH_SIZE; i++) {
+            observationValues[i] = new double[OBS_SIZE];
+            expectedValues[i] = new double[OUTPUT_LAYER_SIZE]();
         }
 
-        std::stringstream lineStream(line);
-        std::string value;
-        int number = 0;
-        int index = 0;
+        std::string line;
+        for (int obsIndex = 0; obsIndex < BATCH_SIZE; obsIndex++) {
+            std::getline(trainingFile, line);
+            std::stringstream lineStream(line);
+            std::string value;
 
-        while (std::getline(lineStream, value, ',')) {
-            if (index == 0) {
-                number = std::stod(value);
-            } else {
-                values[(index - 1) / NUM_ROWS][(index - 1) % NUM_COLS] = std::stod(value);
+            for (int i = 0; i < OBS_SIZE + 1; i++) {
+                std::getline(lineStream, value, ',');
+                if (i == 0) {
+                    int expectedNumber = std::stod(value);
+                    expectedValues[obsIndex][expectedNumber] = 1.00;
+                } else {
+                    observationValues[obsIndex][i - 1] = std::stod(value);
+                }
             }
-            index++;
         }
 
-        data.push_back(new Structures::Image(number, values));
-        for (int i = 0; i < NUM_COLS; i++) { delete[] values[i]; }
-        delete[] values;
+        observations.push_back(Structures::Matrix(BATCH_SIZE, OBS_SIZE, observationValues));
+        expected.push_back(Structures::Matrix(BATCH_SIZE, OUTPUT_LAYER_SIZE, expectedValues));
+
+        delete[] observationValues;
+        delete[] expectedValues;
     }
 
-    return data;
+    trainingFile.close();
 }
 
 int main()
 {
-    std::vector<Structures::Image*> data = processTrainingData();
-
     size_t numLayers = 4;
     size_t layerSizes[] = { 784, 16, 16, 10 };
-    Structures::NeuralNetwork* nnet = new Structures::NeuralNetwork(numLayers, layerSizes);
 
-    nnet->train(data, 1000);
+    std::vector<Structures::Matrix> observations;
+    std::vector<Structures::Matrix> expected;
+    processTrainingData(observations, expected);
 
-    float* buf = new float[10];
-    size_t bufSize = 10;
-
-    nnet->getOutput(&buf);
-    std::cout << "Real: " << data.front()->getNumber() << "\n";
-    std::cout << "Actual: \n";
-    for (int i = 0; i < bufSize; i++) {
-        std::cout << std::to_string(i) << ": " << std::to_string(buf[i]) << "\n";
-    }
-
+    Structures::NeuralNetwork nnet(numLayers, layerSizes);
+    nnet.train(observations, expected);
     return 0;
 }
