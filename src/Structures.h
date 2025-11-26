@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <cstdint>
+#include <vector>
 
 #define BATCH_SIZE 1000
 #define LEARNING_RATE 1.0
@@ -17,9 +18,11 @@ namespace Structures {
         // The number of columns in the matrix
         size_t numCols_;
         // The underlying data inside the matrix
-        double** data_;
+        std::vector<std::vector<double>> data_;
 
     public:
+        Matrix();
+
         /**
          * @brief constructs a new matrix struct and initialises all cell values to 0.0
          * @param numRows the number of rows in the matrix
@@ -33,13 +36,15 @@ namespace Structures {
          * @param numCols the number of columns in the matrix
          * @param values the cell values inside the matrix
          */
-        Matrix(size_t numRows, size_t numCols, double** values);
+        Matrix(size_t numRows, size_t numCols, std::vector<std::vector<double>> values);
 
         // Operator Overloads
         Matrix operator*(const Matrix& other);
         Matrix operator*(const double scalar);
         Matrix operator+(const Matrix& other);
         Matrix operator-(const Matrix& other);
+
+        Matrix dot(const Matrix& other);
 
         /**
          * @brief constructs a transposed version of this matrix
@@ -62,8 +67,6 @@ namespace Structures {
         size_t getNumRows();
         /** Returns the number of columns inside the matrix */
         size_t getNumCols();
-        /** Returns all the cell values inside the matrix as an array of double arrays */
-        double** getData();
 
         /**
          * @brief Returns a cell value 
@@ -83,9 +86,6 @@ namespace Structures {
 
         /** Prints the contents of the matrix to stdout */
         void print();
-
-        /** Destructor */
-        ~Matrix();
     };
 
     /**
@@ -122,6 +122,9 @@ namespace Structures {
         size_t getPrevLayerNeuronsSize();
         /** Returns the weights associated with this layer and previous */
         Matrix getWeights();
+        /** Sets the weights in the matrix */
+        void setWeights(Matrix values);
+        void setBias(Matrix bias);
 
         /**
          * @brief adjusts the weights in this layer
@@ -158,15 +161,6 @@ namespace Structures {
 
         void backPropagate(Matrix expected);
 
-    public:
-        /**
-         * @brief Constructs a Neural Network struct along with its associated layers
-         * @param numLayers the number of layers inside this neural network
-         * @param layerSizes an array of size_t values that represent the number of neurons for each
-         * layer in the network
-         */
-        NeuralNetwork(size_t numLayers, size_t* layerSizes);
-
         /**
          * @brief Performs the feed-forward algorithm, taking in a matrix of inputs for the first
          * layer, then computes and saves neuron values for subsequent layers up to the output
@@ -176,7 +170,17 @@ namespace Structures {
         /** Retrives a layer from the network */
         Layer* getLayer(int layerIndex);
 
+    public:
+        /**
+         * @brief Constructs a Neural Network struct along with its associated layers
+         * @param numLayers the number of layers inside this neural network
+         * @param layerSizes an array of size_t values that represent the number of neurons for each
+         * layer in the network
+         */
+        NeuralNetwork(size_t numLayers, size_t* layerSizes);
+
         void train(std::vector<Matrix> observations, std::vector<Matrix> expected);
+        void test(std::vector<Matrix> observations, std::vector<double> expected);
 
         /** Destructor */
         ~NeuralNetwork();
