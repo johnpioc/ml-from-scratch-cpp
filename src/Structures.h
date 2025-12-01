@@ -8,6 +8,13 @@
 #define LEARNING_RATE 0.001
 
 namespace Structures {
+
+    struct NeuralNetworkArgs {
+        std::vector<int> layerSizes;
+        int numOfTrainingObservations;
+        int numOfTestObservations;
+    };
+
     /**
      * Matrix that stores double values
      */
@@ -177,7 +184,7 @@ namespace Structures {
          * @param layerSizes an array of size_t values that represent the number of neurons for each
          * layer in the network
          */
-        NeuralNetwork(size_t numLayers, size_t* layerSizes);
+        NeuralNetwork(NeuralNetworkArgs& args);
 
         void train(std::vector<Matrix> observations, std::vector<Matrix> expected);
         void test(std::vector<Matrix> observations, std::vector<double> expected);

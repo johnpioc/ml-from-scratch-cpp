@@ -5,7 +5,6 @@
 #include <sstream>
 #include <stdexcept>
 #include <algorithm>
-#include <random>
 #include <vector>
 
 #include "Structures.h"
@@ -365,15 +364,15 @@ namespace Structures {
         return this->layers_[layerIndex];
     }
 
-    NeuralNetwork::NeuralNetwork(size_t numLayers, size_t* layerSizes)
+    NeuralNetwork::NeuralNetwork(NeuralNetworkArgs& args)
     {
-        this->numLayers_ = numLayers;
+        this->numLayers_ = args.layerSizes.size();
         this->layerSizes_ = new size_t[this->numLayers_];
         this->layers_ = new Layer*[this->numLayers_];
         for (int i = 0; i < this->numLayers_; i++) {
-            this->layerSizes_[i] = layerSizes[i];
+            this->layerSizes_[i] = args.layerSizes[i];
             this->layers_[i] = 
-                new Layer(layerSizes[i], i == 0 ? layerSizes[i] : layerSizes[i - 1]);
+                new Layer(args.layerSizes[i], i == 0 ? args.layerSizes[i] : args.layerSizes[i - 1]);
         }
         this->initialiseParams();
     }
@@ -400,7 +399,11 @@ namespace Structures {
             Matrix currentBatch = observations[batchIndex];
             this->feedForward(currentBatch);
 
-            Matrix outputNeurons = outputLayer->getNeuronValues().transpose();
+            Matrix rawOutputNeurons = outputLayer->getNeuronValues();
+            Matrix outputNeurons(rawOutputNeurons.getNumRows(), rawOutputNeurons.getNumCols());
+            softmax(rawOutputNeurons,&outputNeurons);
+            outputNeurons = outputNeurons.transpose();
+
             for (int obsIndex = 0; obsIndex < outputNeurons.getNumRows(); obsIndex++) {
                 int maxIndex = 0;
                 for (int classIndex = 0; classIndex < 10; classIndex++) {

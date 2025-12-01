@@ -1,3 +1,5 @@
 .DS_STORE
 build/
 data/
+neural_network_cpp
+__MACOSX
