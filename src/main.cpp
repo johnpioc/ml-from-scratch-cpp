@@ -36,7 +36,7 @@ void processTrainingData(std::vector<Structures::Matrix>& observations,
                     int expectedNumber = std::stod(value);
                     expectedValues[obsIndex][expectedNumber] = 1.00;
                 } else {
-                    observationValues[obsIndex][i - 1] = std::stod(value);
+                    observationValues[obsIndex][i - 1] = std::stod(value) / 255.0;
                 }
             }
         }
@@ -74,7 +74,7 @@ void processTestData(std::vector<Structures::Matrix>& observations,
                 if (i == 0) {
                     expected.push_back(number);
                 } else {
-                    observationValues[obsIndex][i - 1] = number;
+                    observationValues[obsIndex][i - 1] = number / 255;
                 }
             }
         }

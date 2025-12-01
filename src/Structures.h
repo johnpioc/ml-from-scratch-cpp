@@ -5,7 +5,7 @@
 #include <vector>
 
 #define BATCH_SIZE 1000
-#define LEARNING_RATE 1.0
+#define LEARNING_RATE 0.001
 
 namespace Structures {
     /**
