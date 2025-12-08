@@ -1,5 +1,7 @@
 .DS_STORE
 build/
 data/
-neural_network_cpp
+.gitignore_hidden_message
+./ml_from_scratch
+.venv
 __MACOSX

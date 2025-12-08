@@ -1,188 +1,139 @@
-#include <fstream>
-#include <iomanip>
-#include <vector>
 #include <stdexcept>
+#include <fstream>
 #include <sstream>
-#include <chrono>
+#include <vector>
+#include <cerrno>
+#include <cstring>
 
-#include "Structures.h"
+#include "Matrix.h"
+#include "models/LinearRegression.h"
 
-#define OBS_SIZE 28 * 28
-#define TOTAL_NUM_OF_OBSERVATIONS 60000
-#define OUTPUT_LAYER_SIZE 10
+#define BOSTON_NUM_OF_PREDICTORS 10
+#define BOSTON_N 30
 
-const int DEFAULT_LAYERS[] = { 16, 16 };
-const int NUM_DEFAULT_LAYERS = 2;
+enum ModelType {
+    NONE,
+    LINEAR_REGRESSION
+};
 
-void processCmdLineArgs(int argc, char* argv[], Structures::NeuralNetworkArgs* buf) {
-    argc--;
-    argv++;
-    buf->layerSizes.push_back(OBS_SIZE);
+struct CliParams {
+    ModelType model;
+    CliParams() { model = ModelType::NONE; }
+};
 
-    if (argc == 0) {
-        for (int i = 0; i < NUM_DEFAULT_LAYERS; i++) {
-            buf->layerSizes.push_back(DEFAULT_LAYERS[i]);
-        }
-        buf->layerSizes.push_back(OUTPUT_LAYER_SIZE);
-        return;
+struct Data {
+    Matrix testX;
+    Matrix testY;
+    Matrix trainX;
+    Matrix trainY;
+};
+
+// ===============================================================================================
+// FUNCTION DECLARATIONS
+// ===============================================================================================
+CliParams parseCliArgs(int argc, char* argv[]);
+
+// Helper Functions
+Data getBostonData();
+
+// ===============================================================================================
+// MAIN FUNCTION
+// ===============================================================================================
+int main(int argc, char* argv[])
+{
+    CliParams cliParams = parseCliArgs(argc, argv);
+
+    switch (cliParams.model) {
+        case ModelType::LINEAR_REGRESSION:
+            Data data = getBostonData();
+            LinearRegression model(BOSTON_NUM_OF_PREDICTORS);
+            model.train(data.trainX, data.trainY);
+            model.test(data.testX, data.testY);
+            break;
     }
 
+    return 0;
+}
+
+// ===============================================================================================
+// FUNCTION IMPLEMENTATIONS
+// ===============================================================================================
+CliParams parseCliArgs(int argc, char* argv[])
+{
+    argc--;
+    argv++;
+
+    if (argc == 0)
+        throw std::invalid_argument("You must provide a model");
+
+    CliParams cliParams;
     while (argc > 0) {
-        std::string current(argv[0]);
+        std::string currentArg(argv[0]);
 
-        if (current == "-l") {
-            argc--;
-            argv++;
-
-            if (argc == 0)
-                throw std::invalid_argument("Please provide layer sizes");
-
-            std::string layerSizesString(argv[0]);
-            std::string currentNumberString = "";
-            for (int i = 0; i < layerSizesString.size(); i++) {
-                char currentChar = layerSizesString[i];
-                if (currentChar == ',' || i == layerSizesString.size() - 1) {
-                    if (i == layerSizesString.size() - 1)
-                        currentNumberString += currentChar;
-
-                    size_t pos;
-                    int currentNumber = std::stoi(currentNumberString, &pos);
-
-                    if (currentNumber <= 0) {
-                        throw std::invalid_argument("layer size must be greater than 0");
-                    }
-
-                    if (pos != currentNumberString.length()) {
-                        throw std::invalid_argument("layer size invalid: " + currentNumberString);
-                    }
-
-                    buf->layerSizes.push_back(currentNumber);
-                    currentNumberString = "";
-                } else {
-                    currentNumberString += currentChar;
-                }
-            }
-            buf->layerSizes.push_back(OUTPUT_LAYER_SIZE);
+        if (currentArg == "-linReg") {
+            cliParams.model = ModelType::LINEAR_REGRESSION;
+        } else if (cliParams.model != ModelType::NONE) {
+            throw std::invalid_argument("You cannot specify more than one model");
         } else {
-            throw std::invalid_argument("Invalid command line option: " + current);
+            throw std::invalid_argument("Unknown argument: " + currentArg);
         }
 
         argc--;
         argv++;
     }
+
+    if (cliParams.model == ModelType::NONE)
+        throw std::invalid_argument("You must specify a model");
+
+    return cliParams;
 }
 
-void printParams(Structures::NeuralNetworkArgs& args)
+Data getBostonData()
 {
-    std::cout << "Neural Network Arguments: \n\n";
-    std::cout << "Number of Layers: " << args.layerSizes.size() << "\n";
-    for (int i = 1; i < args.layerSizes.size() - 1; i++) {
-        std::cout << "Hidden Layer " << i << " size: " << args.layerSizes[i] << "\n";
-    }
-    std::cout << "\nTraining Observations: " << args.numOfTrainingObservations << "\n";
-    std::cout << "Test Observations: " << args.numOfTestObservations << "\n";
-}
+    std::ifstream file("../data/Boston.csv");
 
-void processTrainingData(std::vector<Structures::Matrix>& observations,
-    std::vector<Structures::Matrix>& expected, int n)
-{
-    std::ifstream trainingFile("./data/mnist_train.csv");
-    if (!trainingFile.is_open()) {
-        throw std::runtime_error("training csv file cannot be opened");
-    }
+    std::vector<std::vector<double>> trainXData;
+    std::vector<std::vector<double>> trainYData;
 
-    for (int batchIndex = 0; batchIndex < (n / BATCH_SIZE); batchIndex++) {
-        std::vector<std::vector<double>> observationValues(BATCH_SIZE,
-            std::vector<double>(OBS_SIZE));
-        std::vector<std::vector<double>> expectedValues(BATCH_SIZE,
-            std::vector<double>(OUTPUT_LAYER_SIZE, 0.0));
-
-        std::string line;
-        for (int obsIndex = 0; obsIndex < BATCH_SIZE; obsIndex++) {
-            std::getline(trainingFile, line);
-            std::stringstream lineStream(line);
-            std::string value;
-
-            for (int i = 0; i < OBS_SIZE + 1; i++) {
-                std::getline(lineStream, value, ',');
-                if (i == 0) {
-                    int expectedNumber = std::stod(value);
-                    expectedValues[obsIndex][expectedNumber] = 1.00;
-                } else {
-                    observationValues[obsIndex][i - 1] = std::stod(value) / 255.0;
-                }
-            }
+    bool skippedHeader = false;
+    std::string line;
+    int numOfObs = 0;
+    while (std::getline(file, line) && numOfObs < BOSTON_N) {
+        if (!skippedHeader) {
+            skippedHeader = true;
+            continue;
         }
 
-        observations.push_back(Structures::Matrix(BATCH_SIZE, OBS_SIZE, observationValues)
-            .transpose());
-        expected.push_back(Structures::Matrix(BATCH_SIZE, OUTPUT_LAYER_SIZE, expectedValues)
-            .transpose());
-    }
-
-    trainingFile.close();
-}
-
-void processTestData(std::vector<Structures::Matrix>& observations,
-    std::vector<double>& expected, int n)
-{
-    std::ifstream testFile("./data/mnist_test.csv");
-    if (!testFile.is_open()) {
-        throw std::runtime_error("Test csv file cannot be opened");
-    }
-
-    for (int batchIndex = 0; batchIndex < (n / BATCH_SIZE); batchIndex++) {
-        std::vector<std::vector<double>> observationValues(BATCH_SIZE,
-            std::vector<double>(OBS_SIZE));
-
-        std::string line;
-        for (int obsIndex = 0; obsIndex < BATCH_SIZE; obsIndex++) {
-            std::getline(testFile, line);
-            std::stringstream lineStream(line);
-            std::string value;
-
-            for (int i = 0; i < OBS_SIZE + 1; i++) {
-                std::getline(lineStream, value, ',');
-                double number = std::stod(value);
-                if (i == 0) {
-                    expected.push_back(number);
-                } else {
-                    observationValues[obsIndex][i - 1] = number / 255;
-                }
+        std::stringstream ss(line);
+        std::string cell;
+        int cellIndex = 0;
+        std::vector<double> row;
+        while (std::getline(ss, cell, ',')) {
+            // Skip index, indus and age columns
+            if (cellIndex == 0 || cellIndex == 3 || cellIndex == 7) {
+                cellIndex++;
+                continue;
             }
+
+            if (cellIndex == 14) {
+                trainYData.push_back({ std::stod(cell) });
+            } else {
+                row.push_back(std::stod(cell));
+            }
+            cellIndex++;
         }
 
-        observations.push_back(Structures::Matrix(BATCH_SIZE, OBS_SIZE, observationValues)
-            .transpose());
+        trainXData.push_back(row);
+        numOfObs++;
     }
 
-    testFile.close();
-}
+    Data data;
+    data.trainX = Matrix(trainXData.size(), BOSTON_NUM_OF_PREDICTORS, trainXData);
+    data.trainY = Matrix(trainYData.size(), 1, trainYData);
+    data.testX = data.trainX;
+    data.testY = data.trainY;
 
-int main(int argc, char* argv[])
-{
-    Structures::NeuralNetworkArgs nnetArgs;
-    nnetArgs.numOfTrainingObservations = 60000;
-    nnetArgs.numOfTestObservations = 10000;
-    processCmdLineArgs(argc, argv, &nnetArgs);
-    printParams(nnetArgs);
+    file.close();
 
-    std::vector<Structures::Matrix> observations;
-    std::vector<Structures::Matrix> expected;
-    processTrainingData(observations, expected, nnetArgs.numOfTrainingObservations);
-
-    Structures::NeuralNetwork nnet(nnetArgs);
-    auto trainingStartTime = std::chrono::high_resolution_clock::now();
-    nnet.train(observations, expected);
-    auto trainingEndTime = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> trainingRuntime = trainingEndTime - trainingStartTime;
-    std::cout << "Training completed in " << std::fixed << std::setprecision(2) <<
-        trainingRuntime.count() << " seconds.\n";
-
-    std::vector<Structures::Matrix> testObservations;
-    std::vector<double> testExpected;
-    processTestData(testObservations, testExpected, nnetArgs.numOfTestObservations);
-
-    nnet.test(testObservations, testExpected);
-    return 0;
+    return data;
 }
