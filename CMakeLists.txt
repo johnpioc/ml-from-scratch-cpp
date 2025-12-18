@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 4.1.2)
 project(ml_from_scratch)
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR})
-
 add_executable(${PROJECT_NAME} src/main.cpp)
 add_library(matrix src/Matrix.cpp)
 add_library(linear_regression src/models/LinearRegression.cpp)

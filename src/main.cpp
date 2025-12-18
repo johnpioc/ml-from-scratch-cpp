@@ -4,12 +4,10 @@
 #include <vector>
 #include <cerrno>
 #include <cstring>
+#include <chrono>
 
 #include "Matrix.h"
 #include "models/LinearRegression.h"
-
-#define BOSTON_NUM_OF_PREDICTORS 10
-#define BOSTON_N 30
 
 enum ModelType {
     NONE,
@@ -46,8 +44,13 @@ int main(int argc, char* argv[])
     switch (cliParams.model) {
         case ModelType::LINEAR_REGRESSION:
             Data data = getBostonData();
-            LinearRegression model(BOSTON_NUM_OF_PREDICTORS);
+            LinearRegression model(1);
+            auto start = std::chrono::high_resolution_clock::now();
             model.train(data.trainX, data.trainY);
+            auto end = std::chrono::high_resolution_clock::now();
+            std::chrono::duration<double, std::milli> duration = end - start;
+            std::cout << "Implementation Training Time: " << std::fixed << std::setprecision(4)
+            << duration.count() << " Milliseconds\n";
             model.test(data.testX, data.testY);
             break;
     }
@@ -98,7 +101,7 @@ Data getBostonData()
     bool skippedHeader = false;
     std::string line;
     int numOfObs = 0;
-    while (std::getline(file, line) && numOfObs < BOSTON_N) {
+    while (std::getline(file, line)) {
         if (!skippedHeader) {
             skippedHeader = true;
             continue;
@@ -109,17 +112,14 @@ Data getBostonData()
         int cellIndex = 0;
         std::vector<double> row;
         while (std::getline(ss, cell, ',')) {
-            // Skip index, indus and age columns
-            if (cellIndex == 0 || cellIndex == 3 || cellIndex == 7) {
-                cellIndex++;
-                continue;
+            if (cellIndex == 1) {
+                row.push_back(std::stod(cell));
             }
 
             if (cellIndex == 14) {
                 trainYData.push_back({ std::stod(cell) });
-            } else {
-                row.push_back(std::stod(cell));
             }
+
             cellIndex++;
         }
 
@@ -128,7 +128,7 @@ Data getBostonData()
     }
 
     Data data;
-    data.trainX = Matrix(trainXData.size(), BOSTON_NUM_OF_PREDICTORS, trainXData);
+    data.trainX = Matrix(trainXData.size(), 1, trainXData);
     data.trainY = Matrix(trainYData.size(), 1, trainYData);
     data.testX = data.trainX;
     data.testY = data.trainY;

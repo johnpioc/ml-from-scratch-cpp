@@ -5,7 +5,7 @@
 struct LinearRegression {
 private:
     size_t numOfPredictors_;
-    Matrix coefficients_;
+    double coefficient_;
     double intercept_;
 
 public:

@@ -7,54 +7,67 @@
 LinearRegression::LinearRegression(size_t numOfPredictors)
 {
     this->numOfPredictors_ = numOfPredictors;
-    this->coefficients_ = Matrix(this->numOfPredictors_, 1);
+    this->coefficient_ = 0;
     this->intercept_ = 0;
 }
 
 void LinearRegression::train(Matrix& trainX, Matrix& trainY)
 {
-    Matrix temp(this->numOfPredictors_, this->numOfPredictors_);
-    bool inverseExists = (trainX.transpose() * trainX).inverse(temp);
-    if (!inverseExists)
-        throw std::runtime_error("Inverse does not exist for training data");
+    // First find sample x mean and sample y mean
+    double xSum = 0;
+    double ySum = 0;
 
-    this->coefficients_ = temp * trainX.transpose() * trainY;
-    this->intercept_ = 0;
+    for (int i = 0; i < trainX.getNumRows(); i++) {
+        xSum += trainX.get(i, 0);
+        ySum += trainY.get(i, 0);
+    }
+
+    double xMean = xSum / trainX.getNumRows();
+    double yMean = ySum / trainY.getNumRows();
+
+    // Get Coefficient estimate
+    double numerator = 0;
+    double denominator = 0;
+
+    for (int i = 0; i < trainX.getNumRows(); i++) {
+        numerator += (trainX.get(i,0) - xMean) * (trainY.get(i, 0) - yMean);
+        denominator += std::pow(trainX.get(i, 0) - xMean, 2);
+    }
+
+    this->coefficient_ = numerator / denominator;
+
+    // Get intercept estimate
+    this->intercept_ = yMean - this->coefficient_ * xMean;
 }
 
 void LinearRegression::test(Matrix& testX, Matrix& testY)
 {
-    // Obtain Predictions
-    int n = testY.getNumRows();
-    Matrix predictions(n, 1);
+    // Find sample x mean and sample y mean
+    double xSum = 0;
+    double ySum = 0;
 
-    for (int i = 0; i < n; i++) {
-        double prediction = this->intercept_;
-        Matrix currentRow = testX.getRow(i);
-        for (int j = 0; j < this->numOfPredictors_; j++) {
-            prediction += this->coefficients_.get(j, 0) * currentRow.get(0, j);
-        }
-        predictions.put(i, 0, prediction);
+    for (int i = 0; i < testX.getNumRows(); i++) {
+        xSum += testX.get(i,0);
+        ySum += testY.get(i,0);
     }
 
-    // Get label mean
-    double labelSum = 0;
-    for (int i = 0; i < n; i++) {
-        labelSum += testY.get(i, 0);
-    }
+    double xMean = xSum / testX.getNumRows();
+    double yMean = ySum / testY.getNumRows();
 
-    double labelMean = labelSum / n;
-
-    // Compute RSS and TSS
-    double rss = 0;
+    // Get TSS and RSS
     double tss = 0;
-    for (int i = 0; i < n; i++) {
-        rss += std::pow(testY.get(i, 0) - predictions.get(i, 0),2);
-        tss += std::pow(testY.get(i, 0) - labelMean, 2);
+    double rss = 0;
+
+    for (int i = 0; i < testX.getNumRows(); i++) {
+        double estimate = this->intercept_ + this->coefficient_ * testX.get(i, 0); 
+        tss += std::pow(testY.get(i, 0) - yMean, 2);
+        rss += std::pow(estimate - testY.get(i,0), 2);
     }
 
-    double r_squared = 1 - (rss / tss);
+    // Compute R Squared
+    double rSquared = 1 - rss / tss;
 
-    std::cout << "Implementation R Squared: " << std::fixed << std::setprecision(2) 
-        << r_squared << "\n";
+    std::cout << "Implementation R Squared: " << std::fixed << std::setprecision(2) << rSquared 
+        << '\n';
+
 }
