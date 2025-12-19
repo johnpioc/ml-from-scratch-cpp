@@ -8,6 +8,7 @@ if [ -z "$1" ]; then
     echo "Please provide the model that you want to run: "
     echo "Linear Regression: -linReg"
     echo "Logistic Regression: -logReg"
+    echo "Quadratic Discriminant Analysis: -qda"
     exit 1
 fi
 
@@ -20,6 +21,9 @@ case $MODEL_TYPE in
     ;;
   "-logReg")
     PYTHON_SCRIPT_PATH="src/benchmark/LogisticRegression.py"
+    ;;
+  "-qda")
+    PYTHON_SCRIPT_PATH="src/benchmark/QuadraticDiscriminantAnalysis.py"
     ;;
   *)
     echo "Error: Unknown model type '$MODEL_TYPE'"
@@ -61,7 +65,7 @@ fi
 
 cd $BUILD_DIR
 
-cmake .. > /dev/null
+cmake -DCMAKE_BUILD_TYPE=debug .. > /dev/null
 make > /dev/null
 
 echo "✅ Build Successful."

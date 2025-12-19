@@ -14,7 +14,6 @@ private:
     std::vector<std::vector<double>> data_;
 
     void cofactor(Matrix& mat, Matrix& buf, int p, int q, int n);
-    long long determinant(Matrix& mat, int n);
     void adjoint(Matrix& mat, Matrix& buf);
 
 public:
@@ -49,6 +48,7 @@ public:
      */
     Matrix transpose();
 
+    long long determinant(Matrix& mat, int n);
     bool inverse(Matrix& buf);
 
     /**

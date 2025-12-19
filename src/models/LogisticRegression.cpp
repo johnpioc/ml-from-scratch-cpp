@@ -36,8 +36,8 @@ void LogisticRegression::test(Matrix& testX, Matrix& testY)
         }
     }
 
-    double errorRate = static_cast<double>(numOfErrors) / testX.getNumRows();
+    double errorRate = static_cast<double>(numOfErrors) / testX.getNumRows() * 100;
 
-    std::cout << "Implementation Error Rate: " << std::fixed << std::setprecision(4) << errorRate 
-        << "\n";
+    std::cout << "Implementation Error Rate: " << std::fixed << std::setprecision(2) << errorRate 
+        << "%\n";
 }

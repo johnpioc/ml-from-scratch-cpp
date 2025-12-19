@@ -1,6 +1,6 @@
 # Machine Learning From Scratch (C++)
 
-Implementations of several Machine Learning models from scratch in C++ with runtime & model accuracy comparisons to equivalent implementations in Python's Tensorflow and Statsmodels.
+Implementations of several Machine Learning models from scratch in C++ with runtime & model accuracy comparisons to equivalent implementations in popular Python ML libraries (Scikit-Learn, Statsmodels, etc.)
 
 ### 🧠 Motivation
 
@@ -19,7 +19,8 @@ Below is a table comparing the models I've implemented versus the equivalent imp
 | Model | Description | Compared To | Accuracy Metric | Accuracy Comparison | Runtime Comparison |
 |-|--|-|-|-|-|
 | Linear Regression | A one predictor linear regression model on the [Boston](https://www.kaggle.com/code/prasadperera/the-boston-housing-dataset) dataset (n=506) that regressed crime rate to median house value in Boston. | Statsmodels |$R^2$ | 100% Identical | 19x Faster |
-| Logistic Regresssion | A one predictor logistic regression model on the [Stock Market]() dataset (n=1250) that predicted whether the price of the S&P 500 Index would increase or decrease based on the previous day's returns | Statsmodels | Mean Error Rate | 4.5% Less Accurate | 15.8x Faster
+| Logistic Regresssion | A one predictor logistic regression model on the [Stock Market](https://www.rdocumentation.org/packages/ISLR/versions/1.4/topics/Smarket) dataset (n=1250) that predicted whether the price of the S&P 500 Index would increase or decrease based on the previous day's percentage returns. | Statsmodels | Mean Error Rate | 100% Identical | 15.8x Faster
+| Quadratic Discriminant Analysis | Two Predictor QDA model on the [Stock Market](https://www.rdocumentation.org/packages/ISLR/versions/1.4/topics/Smarket) dataset (n=1250) that predicted whether the price of the S&P 500 Index would increase or decrease based on the percentage returns from the previous day (lag-1), as well the percentage returns from two days before (lag-2). | Scikit-Learn | Mean Error Rate | 100% Identical | 5.4x Slower
 
 
 ### 🔨 Setup
@@ -54,3 +55,4 @@ Python statsmodels R Squared: 0.15
 
 - Linear Regression: `-linReg`
 - Logistic Regression: `-logReg`
+- Quadratic Discriminant Analysis: `-qda`

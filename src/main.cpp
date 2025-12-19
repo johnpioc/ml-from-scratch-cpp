@@ -10,11 +10,13 @@
 #include "models/Model.h"
 #include "models/LinearRegression.h"
 #include "models/LogisticRegression.h"
+#include "models/QuadraticDiscriminantAnalysis.h"
 
 enum ModelType {
     NONE,
     LINEAR_REGRESSION,
-    LOGISTIC_REGRESSION
+    LOGISTIC_REGRESSION,
+    QDA
 };
 
 struct CliParams {
@@ -38,7 +40,7 @@ Data getData(ModelType modeltype);
 
 // Helper Functions
 Data getBostonData();
-Data getStockMarketData();
+Data getStockMarketData(int numOfLags);
 
 // ===============================================================================================
 // MAIN FUNCTION
@@ -82,6 +84,8 @@ CliParams parseCliArgs(int argc, char* argv[])
             cliParams.model = ModelType::LINEAR_REGRESSION;
         } else if (currentArg == "-logReg") {
             cliParams.model = ModelType::LOGISTIC_REGRESSION;
+        } else if (currentArg == "-qda") {
+            cliParams.model = ModelType::QDA;
         } else if (cliParams.model != ModelType::NONE) {
             throw std::invalid_argument("You cannot specify more than one model");
         } else {
@@ -109,6 +113,9 @@ Model* getModel(ModelType modelType)
         case ModelType::LOGISTIC_REGRESSION:
             model = new LogisticRegression();
             break;
+        case ModelType::QDA:
+            model = new QuadraticDiscriminantAnalysis(2);
+            break;
     }
 
     return model;
@@ -123,7 +130,10 @@ Data getData(ModelType modelType)
             data = getBostonData();
             break;
         case ModelType::LOGISTIC_REGRESSION:
-            data = getStockMarketData();
+            data = getStockMarketData(1);
+            break;
+        case ModelType::QDA:
+            data = getStockMarketData(2);
             break;
     }
 
@@ -175,7 +185,7 @@ Data getBostonData()
     return data;
 }
 
-Data getStockMarketData()
+Data getStockMarketData(int numOfLags)
 {
     std::ifstream file("../data/SMarket.csv");
 
@@ -192,23 +202,26 @@ Data getStockMarketData()
 
         std::stringstream ss(line);
         std::string cell;
+        std::vector<double> row;
         int cellIndex = 0;
         while (std::getline(ss, cell, ',')) {
-            if (cellIndex == 2) {
-                trainXData.push_back({ std::stod(cell) });
+            if (cellIndex > 1 && (cellIndex - 2) < numOfLags) {
+                row.push_back(std::stod(cell));
             }
 
             if (cellIndex == 9) {
-                trainYData.push_back({ cell == "Up" ? 0.0 : 1.0 });
+                trainYData.push_back({ cell == "\"Up\"" ? 0.0 : 1.0 });
             }
 
             cellIndex++;
         }
+
+        trainXData.push_back(row);
     }
 
     Data data;
-    data.trainX = Matrix(trainXData.size(), 1, trainXData);
-    data.trainY = Matrix(trainYData.size(), 1, trainYData);
+    data.trainX = Matrix(trainXData.size(), numOfLags, trainXData);
+    data.trainY = Matrix(trainYData.size(), numOfLags, trainYData);
     data.testX = data.trainX;
     data.testY = data.trainY;
 
