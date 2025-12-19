@@ -1,15 +1,15 @@
 #pragma once
 
 #include "../Matrix.h"
+#include "Model.h"
 
-struct LinearRegression {
+struct LinearRegression : Model {
 private:
-    size_t numOfPredictors_;
     double coefficient_;
     double intercept_;
 
 public:
-    LinearRegression(size_t numOfPredictors);
+    LinearRegression();
 
     void train(Matrix& trainX, Matrix& trainY);
 

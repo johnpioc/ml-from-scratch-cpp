@@ -4,9 +4,8 @@
 #include "../Matrix.h"
 #include "LinearRegression.h"
 
-LinearRegression::LinearRegression(size_t numOfPredictors)
+LinearRegression::LinearRegression()
 {
-    this->numOfPredictors_ = numOfPredictors;
     this->coefficient_ = 0;
     this->intercept_ = 0;
 }

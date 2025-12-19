@@ -16,9 +16,10 @@ Below is a table comparing the models I've implemented versus the equivalent imp
 
 **System Specs:** Mac Mini M4 (2024), 16GB
 
-| Model | Accuracy Metric | Accuracy Comparison to Tensorflow / Statsmodels | Runtime Comparison |
-|-|-|-|-|
-| Simple Linear Regression | $R^2$ | Achieves 100% to Statsmodel's OLS Algorithm | 1905% Faster than Statsmodels |
+| Model | Description | Compared To | Accuracy Metric | Accuracy Comparison | Runtime Comparison |
+|-|--|-|-|-|-|
+| Linear Regression | A one predictor linear regression model on the [Boston](https://www.kaggle.com/code/prasadperera/the-boston-housing-dataset) dataset (n=506) that regressed crime rate to median house value in Boston. | Statsmodels |$R^2$ | 100% Identical | 19x Faster |
+| Logistic Regresssion | A one predictor logistic regression model on the [Stock Market]() dataset (n=1250) that predicted whether the price of the S&P 500 Index would increase or decrease based on the previous day's returns | Statsmodels | Mean Error Rate | 4.5% Less Accurate | 15.8x Faster
 
 
 ### 🔨 Setup
@@ -48,3 +49,8 @@ Python statsmodels R Squared: 0.15
 ```
 
 `run.sh` will unzip the datasets, setup the python environemnt, run cmake and build the project, then run the specified model.
+
+**Available Model Parameters:**:
+
+- Linear Regression: `-linReg`
+- Logistic Regression: `-logReg`

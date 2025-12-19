@@ -7,6 +7,7 @@ if [ -z "$1" ]; then
     echo ""
     echo "Please provide the model that you want to run: "
     echo "Linear Regression: -linReg"
+    echo "Logistic Regression: -logReg"
     exit 1
 fi
 
@@ -16,6 +17,9 @@ PYTHON_SCRIPT_PATH=""
 case $MODEL_TYPE in
   "-linReg")
     PYTHON_SCRIPT_PATH="src/benchmark/LinearRegression.py"
+    ;;
+  "-logReg")
+    PYTHON_SCRIPT_PATH="src/benchmark/LogisticRegression.py"
     ;;
   *)
     echo "Error: Unknown model type '$MODEL_TYPE'"
