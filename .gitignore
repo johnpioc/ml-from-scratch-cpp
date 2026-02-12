@@ -5,3 +5,6 @@ data/
 ./ml_from_scratch
 .venv
 __MACOSX
+.husky
+node_modules/
+package-lock.json
