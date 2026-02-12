@@ -3,6 +3,7 @@
 #include <vector>
 
 namespace mlfs {
+namespace core {
 
 class Matrix {
 private:
@@ -20,4 +21,5 @@ public:
     void set(int r, int c, double val);
 };
 
+}
 }

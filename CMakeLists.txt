@@ -8,6 +8,6 @@ add_executable(mlfs
     src/core/matrix.cpp
 )
 
-target_include_directories(mlfs PRIVATE
+target_include_directories(mlfs PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )
