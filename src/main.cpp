@@ -158,10 +158,12 @@ void runModel(ModelType modelType, Data data) {
         case ModelType::LINEAR_REGRESSION:
             mlfs::models::LinearRegression model;
             model.fit(data.xTrain, data.yTrain);
-            mlfs::core::Vector yPred = model.predict(data.xTest);
-            double rSquared = model.evaluate(yPred, data.yTest);
+
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> duration = end - start;
+
+            mlfs::core::Vector yPred = model.predict(data.xTest);
+            double rSquared = model.evaluate(yPred, data.yTest);
 
             std::cout << "Implementation Training Time: " << std::fixed << std::setprecision(4)
                 << duration.count() << " Milliseconds\n";
