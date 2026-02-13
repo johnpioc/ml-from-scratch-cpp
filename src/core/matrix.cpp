@@ -1,8 +1,10 @@
 #include <mlfs/core/matrix.hpp>
+#include <mlfs/core/vector.hpp>
 #include <vector>
 
 using namespace mlfs::core;
 
+// Matrix Methods
 Matrix::Matrix(int numRows, int numCols) {
     this->numRows_ = numRows;
     this->numCols_ = numCols;
@@ -18,10 +20,106 @@ Matrix::Matrix(std::vector<std::vector<double>>& data) {
     this->data_ = data;
 }
 
+int Matrix::getNumRows() { return this->numRows_; }
+int Matrix::getNumCols() { return this->numCols_; }
+
 double Matrix::get(int r, int c) {
     return this->data_[r][c];
 }
 
 void Matrix::set(int r, int c, double val) {
     this->data_[r][c] = val;
+}
+
+Matrix Matrix::operator*(Matrix& other) {
+    // TODO: throw exception if this number of cols does not equal other's num of rows
+    
+    Matrix res(this->numRows_, other.numCols_);
+
+    for (int ra = 0; ra < this->numRows_; ra++) {
+        for (int cb = 0; cb < other.numCols_; cb++) {
+            double val = 0;
+            for (int i = 0; i < this->numCols_; i++) {
+                val += this->get(ra, i) * other.get(i, cb);
+            }
+            res.set(ra, cb, val);
+        }
+    }
+
+    return res;
+}
+
+Vector Matrix::operator*(Vector& vec) {
+    int common = vec.isColVector() ? vec.getNumCells() : 1;
+    // TODO: throw exception if the number of cols in matrix doesn't equal commmon
+    
+    Vector res(this->numRows_);
+    for (int ra = 0; ra < this->numRows_; ra++) {
+        double val = 0;
+        for (int i = 0; i < common; i++) {
+            val += this->get(ra, i) * vec.get(i); 
+        }
+        res.set(ra, val);
+    }
+
+    return res;
+}
+
+Matrix Matrix::transpose() {
+    Matrix res(this->numCols_, this->numRows_);
+
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            res.set(c, r, this->get(r, c));
+        }
+    }
+
+    return res;
+}
+
+// Source: https://www.geeksforgeeks.org/computer-science-fundamentals/
+// finding-inverse-of-a-matrix-using-gauss-jordan-method/
+Matrix Matrix::inverse() {
+    int order = this->numRows_;
+    
+    Matrix aug(order, 2 * order);
+
+    for (int i = 0; i < order; i++) {
+        for (int j = 0; j < order; j++) {
+            aug.set(i, j, this->get(i, j));
+            if (i == j) aug.set(i, j + order, 1.0);
+        }
+    }
+
+    for (int i = order - 1; i > 0; i--) {
+        if (aug.get(i - 1, 0) < aug.get(i, 0)) {
+            for (int k = 0; k < 2 * order; k++) {
+                double temp = aug.get(i, k);
+                aug.set(i, k, aug.get(i - 1, k));
+                aug.set(i - 1, k, temp);
+            }
+        }
+    }
+
+    for (int i = 0; i < order; i++) {
+        for (int j = 0; j < order; j++) {
+            if (j != i) {
+                double temp = aug.get(j, i) / aug.get(i, i);
+                for (int k = 0; k < 2 * order; k++) {
+                    double val = aug.get(j, k) - (aug.get(i, k) * temp);
+                    aug.set(j, k, val);
+                }
+            }
+        }
+    }
+
+    Matrix inv(order, order);
+    for (int i = 0; i < order; i++) {
+        double divisor = aug.get(i, i);
+        for (int j = 0; j < order; j++) {
+            inv.set(i, j, aug.get(i, j + order) / divisor);
+        }
+    }
+
+    return inv;
 }
