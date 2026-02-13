@@ -20,6 +20,9 @@ Matrix::Matrix(std::vector<std::vector<double>>& data) {
     this->data_ = data;
 }
 
+int Matrix::getNumRows() { return this->numRows_; }
+int Matrix::getNumCols() { return this->numCols_; }
+
 double Matrix::get(int r, int c) {
     return this->data_[r][c];
 }
@@ -37,7 +40,7 @@ Matrix Matrix::operator*(Matrix& other) {
         for (int cb = 0; cb < other.numCols_; cb++) {
             double val = 0;
             for (int i = 0; i < this->numCols_; i++) {
-                val += this->get(ra, i) * this->get(i, cb);
+                val += this->get(ra, i) * other.get(i, cb);
             }
             res.set(ra, cb, val);
         }
@@ -78,49 +81,45 @@ Matrix Matrix::transpose() {
 // finding-inverse-of-a-matrix-using-gauss-jordan-method/
 Matrix Matrix::inverse() {
     int order = this->numRows_;
-    double temp;
+    
+    Matrix aug(order, 2 * order);
 
-    // Create copy of matrix
-    Matrix mat(this->data_);
-
-    // Create augmented matrix
     for (int i = 0; i < order; i++) {
-        for (int j = 0; j < 2 * order; j++) {
-            if (j == (i + order)) mat.set(i, j, 1);
+        for (int j = 0; j < order; j++) {
+            aug.set(i, j, this->get(i, j));
+            if (i == j) aug.set(i, j + order, 1.0);
         }
     }
 
-    // Interchange the row of matrix
     for (int i = order - 1; i > 0; i--) {
-        if (mat.get(i - 1, 0) < mat.get(i, 0)) {
-            for (int j = 0; j < 2 * order; j++) {
-                temp = mat.get(i, j);
-                mat.set(i, j, mat.get(i - 1, j));
-                mat.set(i - 1, j, temp);
+        if (aug.get(i - 1, 0) < aug.get(i, 0)) {
+            for (int k = 0; k < 2 * order; k++) {
+                double temp = aug.get(i, k);
+                aug.set(i, k, aug.get(i - 1, k));
+                aug.set(i - 1, k, temp);
             }
         }
     }
 
-    // Replace a row by sum of itself and a constant multiple of another row of the matrix
     for (int i = 0; i < order; i++) {
         for (int j = 0; j < order; j++) {
             if (j != i) {
-                temp = mat.get(j, i) / mat.get(i, j);
+                double temp = aug.get(j, i) / aug.get(i, i);
                 for (int k = 0; k < 2 * order; k++) {
-                    double newVal = mat.get(j, k) - mat.get(i, k) * temp;
-                    mat.set(j, k, newVal);
+                    double val = aug.get(j, k) - (aug.get(i, k) * temp);
+                    aug.set(j, k, val);
                 }
             }
         }
     }
 
-    // Multiply each row by a non-zero integer
+    Matrix inv(order, order);
     for (int i = 0; i < order; i++) {
-        temp = mat.get(i, i);
-        for (int j = 0; j < 2 * order; j++) {
-            mat.set(i, j, mat.get(i, j) / temp);
+        double divisor = aug.get(i, i);
+        for (int j = 0; j < order; j++) {
+            inv.set(i, j, aug.get(i, j + order) / divisor);
         }
     }
 
-    return mat;
+    return inv;
 }

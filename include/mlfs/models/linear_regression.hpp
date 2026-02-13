@@ -8,7 +8,7 @@ namespace models {
 
 class LinearRegression {
 private:
-    core::Vector beta_;
+    core::Vector beta_{0};
 
 public:
     /* Takes a given matrix of observation predictors and a given vector of observation responses

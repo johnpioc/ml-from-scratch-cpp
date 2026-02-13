@@ -34,7 +34,7 @@ Vector LinearRegression::predict(Matrix& x) {
     return augmented * this->beta_;
 }
 
-double evaluate(Vector& yPred, Vector& yTrue) {
+double LinearRegression::evaluate(Vector& yPred, Vector& yTrue) {
     int n = yPred.getNumCells();
 
     // Calculate mean response
