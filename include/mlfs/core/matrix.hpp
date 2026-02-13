@@ -41,6 +41,12 @@ public:
 
     /* Matrix multiplication with vector operator overload */
     Vector operator*(Vector& vec);
+
+    /* Returns the transposed version of this matrix */
+    Matrix transpose();
+
+    /* Returns the inverse of this matrix */
+    Matrix inverse();
 };
 
 }
