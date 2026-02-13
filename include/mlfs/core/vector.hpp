@@ -23,6 +23,18 @@ public:
     /* Uses a given vector of doubles to initialise a Vector */
     Vector(std::vector<double> data);
 
+    /* Retrives the number of cells in this vector */
+    int getNumCells() const;
+
+    /* Returns true if this is a column vector, false otherwise */
+    bool isColVector();
+
+    /* Sets a given value at a given position in the vector */
+    void set(int i, double val);
+
+    /* Retrives a value at a given position in the vector */
+    double get(int i);
+
     /* Col Vector <=> Row Vector */
     void transpose();
 };

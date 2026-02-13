@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 add_executable(mlfs
     src/core/matrix.cpp
+    src/core/vector.cpp
 )
 
 target_include_directories(mlfs PUBLIC
