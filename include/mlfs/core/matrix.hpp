@@ -41,6 +41,9 @@ public:
 
     /* Returns the inverse of this matrix */
     Matrix inverse();
+
+    /* Augments the matrix to prepend a column of 1.0s at the start */
+    Matrix prependOnes();
 };
 
 }

@@ -7,13 +7,7 @@ using namespace mlfs::models;
 using namespace mlfs::core;
 
 void LinearRegression::fit(Matrix& x, Vector& y) {
-    // Augment x to include a column of 1.0s at the start to represent intercept
-    Matrix augmented(x.numRows, x.numCols + 1);
-    for (int r = 0; r < augmented.numRows; r++) {
-         for (int c = 0; c < augmented.numCols; c++) {
-            augmented.set(r, c, c == 0 ? 1.0 : x.get(r, c - 1));
-        }
-    }
+    Matrix augmented = x.prependOnes();
 
     // Get OLS solution
     Matrix XT = augmented.transpose();
@@ -23,14 +17,7 @@ void LinearRegression::fit(Matrix& x, Vector& y) {
 }
 
 Vector LinearRegression::predict(Matrix& x) {
-    // Augment x to include a column of 1.0s at the start to represent intercept
-    Matrix augmented(x.numRows, x.numCols + 1);
-    for (int r = 0; r < augmented.numRows; r++) {
-         for (int c = 0; c < augmented.numCols; c++) {
-            augmented.set(r, c, c == 0 ? 1.0 : x.get(r, c - 1));
-        }
-    }
-
+    Matrix augmented = x.prependOnes();
     return augmented * this->beta_;
 }
 

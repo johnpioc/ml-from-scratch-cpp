@@ -120,3 +120,15 @@ Matrix Matrix::inverse() {
 
     return inv;
 }
+
+Matrix Matrix::prependOnes() {
+    Matrix augmented(this->numRows, this->numCols + 1);
+
+    for (int r = 0; r < augmented.numRows; r++) {
+        for (int c = 0; c < augmented.numCols; c++) {
+            augmented.set(r, c, c == 0 ? 1.0 : this->get(r, c - 1));
+        }
+    }
+
+    return augmented;
+}
