@@ -5,26 +5,27 @@
 using namespace mlfs::core;
 
 // Matrix Methods
-Matrix::Matrix(int numRows, int numCols) {
-    this->numRows_ = numRows;
-    this->numCols_ = numCols;
+Matrix::Matrix(int numRows, int numCols): 
+    numRows(numRows),
+    numCols(numCols) {
     this->data_ = std::vector<std::vector<double>>(
-        this->numRows_, 
-        std::vector<double>(this->numCols_, 0.0)
+        this->numRows, 
+        std::vector<double>(this->numCols, 0.0)
     );
 }
 
 Matrix::Matrix(std::vector<std::vector<double>>& data) {
-    this->numRows_ = data.size();
-    this->numCols_ = data.front().size();
+    this->numRows = data.size();
+    this->numCols = data.front().size();
     this->data_ = data;
 }
 
-int Matrix::getNumRows() { return this->numRows_; }
-int Matrix::getNumCols() { return this->numCols_; }
-
 double Matrix::get(int r, int c) {
     return this->data_[r][c];
+}
+
+Vector Matrix::getRow(int r) {
+    return Vector(this->data_[r]);
 }
 
 void Matrix::set(int r, int c, double val) {
@@ -34,12 +35,12 @@ void Matrix::set(int r, int c, double val) {
 Matrix Matrix::operator*(Matrix& other) {
     // TODO: throw exception if this number of cols does not equal other's num of rows
     
-    Matrix res(this->numRows_, other.numCols_);
+    Matrix res(this->numRows, other.numCols);
 
-    for (int ra = 0; ra < this->numRows_; ra++) {
-        for (int cb = 0; cb < other.numCols_; cb++) {
+    for (int ra = 0; ra < this->numRows; ra++) {
+        for (int cb = 0; cb < other.numCols; cb++) {
             double val = 0;
-            for (int i = 0; i < this->numCols_; i++) {
+            for (int i = 0; i < this->numCols; i++) {
                 val += this->get(ra, i) * other.get(i, cb);
             }
             res.set(ra, cb, val);
@@ -50,11 +51,11 @@ Matrix Matrix::operator*(Matrix& other) {
 }
 
 Vector Matrix::operator*(Vector& vec) {
-    int common = vec.isColVector() ? vec.getNumCells() : 1;
+    int common = vec.isColVector ? vec.numCells : 1;
     // TODO: throw exception if the number of cols in matrix doesn't equal commmon
     
-    Vector res(this->numRows_);
-    for (int ra = 0; ra < this->numRows_; ra++) {
+    Vector res(this->numRows);
+    for (int ra = 0; ra < this->numRows; ra++) {
         double val = 0;
         for (int i = 0; i < common; i++) {
             val += this->get(ra, i) * vec.get(i); 
@@ -66,10 +67,10 @@ Vector Matrix::operator*(Vector& vec) {
 }
 
 Matrix Matrix::transpose() {
-    Matrix res(this->numCols_, this->numRows_);
+    Matrix res(this->numCols, this->numRows);
 
-    for (int r = 0; r < this->numRows_; r++) {
-        for (int c = 0; c < this->numCols_; c++) {
+    for (int r = 0; r < this->numRows; r++) {
+        for (int c = 0; c < this->numCols; c++) {
             res.set(c, r, this->get(r, c));
         }
     }
@@ -80,7 +81,7 @@ Matrix Matrix::transpose() {
 // Source: https://www.geeksforgeeks.org/computer-science-fundamentals/
 // finding-inverse-of-a-matrix-using-gauss-jordan-method/
 Matrix Matrix::inverse() {
-    int order = this->numRows_;
+    int order = this->numRows;
     
     Matrix aug(order, 2 * order);
 
@@ -122,4 +123,16 @@ Matrix Matrix::inverse() {
     }
 
     return inv;
+}
+
+Matrix Matrix::prependOnes() {
+    Matrix augmented(this->numRows, this->numCols + 1);
+
+    for (int r = 0; r < augmented.numRows; r++) {
+        for (int c = 0; c < augmented.numCols; c++) {
+            augmented.set(r, c, c == 0 ? 1.0 : this->get(r, c - 1));
+        }
+    }
+
+    return augmented;
 }
