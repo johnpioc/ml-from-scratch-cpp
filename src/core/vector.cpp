@@ -41,3 +41,13 @@ double Vector::operator*(Vector& other) {
 
     return dotProduct;
 }
+
+double Vector::operator*(double scalar) {
+    Vector result(this->data_);
+
+    for (int i = 0; i < result.numCells; i++) {
+        result.set(i, result.get(i) * scalar);
+    }
+
+    return result;
+}

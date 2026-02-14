@@ -12,5 +12,9 @@ void LogisticRegression::fit(Matrix& x, Vector& y) {
 
     // Estimate coefficients using gradient descent
     for (int i = 0; i < n; i++) {
+        Vector currentRow = augmented.getRow(i);
+        double exponential = std::exp(this->beta_ * currentRow);
+        double estimate = exponential / (1 + exponential);
+        double error = y.get(i) - estimate;
     }
 }

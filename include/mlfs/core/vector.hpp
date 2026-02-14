@@ -34,6 +34,9 @@ public:
 
     /* Dot Product */
     double operator*(Vector& other);
+
+    /* Scalar Multiplication */
+    double operator*(double scalar);
 };
 }
 }
