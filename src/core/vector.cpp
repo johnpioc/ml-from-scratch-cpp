@@ -42,7 +42,7 @@ double Vector::operator*(Vector& other) {
     return dotProduct;
 }
 
-double Vector::operator*(double scalar) {
+Vector Vector::operator*(double scalar) {
     Vector result(this->data_);
 
     for (int i = 0; i < result.numCells; i++) {
@@ -50,4 +50,19 @@ double Vector::operator*(double scalar) {
     }
 
     return result;
+}
+
+Vector Vector::operator-=(Vector& other) {
+    // TODO: dimension check
+    // TODO: check both are col vectors or both are row vectors
+
+    for (int i = 0; i < this->numCells; i++) {
+        this->set(i, this->get(i) - other.get(i));
+    }
+
+    return *this;
+}
+
+Vector Vector::operator-(Vector& rhs) {
+    return *this -= rhs;
 }

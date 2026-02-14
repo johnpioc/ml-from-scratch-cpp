@@ -36,7 +36,13 @@ public:
     double operator*(Vector& other);
 
     /* Scalar Multiplication */
-    double operator*(double scalar);
+    Vector operator*(double scalar);
+
+    /* Vector Subtraction by Assignmnent */
+    Vector operator-=(Vector& other);
+
+    /* Vector Subtraction */
+    Vector operator-(Vector& rhs);
 };
 }
 }
