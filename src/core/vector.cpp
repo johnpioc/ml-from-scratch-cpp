@@ -25,3 +25,19 @@ double Vector::get(int i) {
 void Vector::transpose() {
     this->isColVector = !this->isColVector;
 }
+
+double Vector::operator*(Vector& other) {
+    // TODO: check that this vector is a column vector and other is a row vector
+    /* TODO: check that the number of cols this vector has equals the number of rows other vector
+    * has
+    */
+
+    double dotProduct = 0.0;
+
+    for (int i = 0; i < this->numCells; i++) {
+        dotProduct += this->get(i) * other.get(i);
+    }
+
+
+    return dotProduct;
+}

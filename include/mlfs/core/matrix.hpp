@@ -27,6 +27,9 @@ public:
     /* Retrives the value stored at a given row and column number */
     double get(int r, int c);
 
+    /* Retrives the row at the given row index */
+    Vector getRow(int r);
+
     /* Sets the value at a given row and column number */
     void set(int r, int c, double val);
 

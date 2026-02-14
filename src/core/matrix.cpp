@@ -24,6 +24,10 @@ double Matrix::get(int r, int c) {
     return this->data_[r][c];
 }
 
+Vector Matrix::getRow(int r) {
+    return Vector(this->data_[r]);
+}
+
 void Matrix::set(int r, int c, double val) {
     this->data_[r][c] = val;
 }

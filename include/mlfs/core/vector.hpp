@@ -31,6 +31,9 @@ public:
 
     /* Col Vector <=> Row Vector */
     void transpose();
+
+    /* Dot Product */
+    double operator*(Vector& other);
 };
 }
 }
