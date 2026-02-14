@@ -47,7 +47,7 @@ Matrix Matrix::operator*(Matrix& other) {
 }
 
 Vector Matrix::operator*(Vector& vec) {
-    int common = vec.isColVector() ? vec.getNumCells() : 1;
+    int common = vec.isColVector ? vec.numCells : 1;
     // TODO: throw exception if the number of cols in matrix doesn't equal commmon
     
     Vector res(this->numRows);

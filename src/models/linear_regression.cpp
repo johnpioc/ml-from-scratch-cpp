@@ -8,9 +8,9 @@ using namespace mlfs::core;
 
 void LinearRegression::fit(Matrix& x, Vector& y) {
     // Augment x to include a column of 1.0s at the start to represent intercept
-    Matrix augmented(x.getNumRows(), x.getNumCols() + 1);
-    for (int r = 0; r < augmented.getNumRows(); r++) {
-         for (int c = 0; c < augmented.getNumCols(); c++) {
+    Matrix augmented(x.numRows, x.numCols + 1);
+    for (int r = 0; r < augmented.numRows; r++) {
+         for (int c = 0; c < augmented.numCols; c++) {
             augmented.set(r, c, c == 0 ? 1.0 : x.get(r, c - 1));
         }
     }
@@ -24,9 +24,9 @@ void LinearRegression::fit(Matrix& x, Vector& y) {
 
 Vector LinearRegression::predict(Matrix& x) {
     // Augment x to include a column of 1.0s at the start to represent intercept
-    Matrix augmented(x.getNumRows(), x.getNumCols() + 1);
-    for (int r = 0; r < augmented.getNumRows(); r++) {
-         for (int c = 0; c < augmented.getNumCols(); c++) {
+    Matrix augmented(x.numRows, x.numCols + 1);
+    for (int r = 0; r < augmented.numRows; r++) {
+         for (int c = 0; c < augmented.numCols; c++) {
             augmented.set(r, c, c == 0 ? 1.0 : x.get(r, c - 1));
         }
     }
@@ -35,7 +35,7 @@ Vector LinearRegression::predict(Matrix& x) {
 }
 
 double LinearRegression::evaluate(Vector& yPred, Vector& yTrue) {
-    int n = yPred.getNumCells();
+    int n = yPred.numCells;
 
     // Calculate mean response
     double sum = 0;
