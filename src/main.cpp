@@ -1,5 +1,6 @@
 #include <mlfs/core/matrix.hpp>
 #include <mlfs/core/vector.hpp>
+#include <mlfs/core/fitting_policy.hpp>
 #include <mlfs/models/linear_regression.hpp>
 #include <ratio>
 #include <stdexcept>
@@ -156,7 +157,7 @@ void runModel(ModelType modelType, Data data) {
 
     switch(modelType) {
         case ModelType::LINEAR_REGRESSION:
-            mlfs::models::LinearRegression model;
+            mlfs::models::LinearRegression<mlfs::core::OLS> model;
             model.fit(data.xTrain, data.yTrain);
 
             auto end = std::chrono::high_resolution_clock::now();

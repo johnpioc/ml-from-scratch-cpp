@@ -18,8 +18,6 @@ public:
 };
 
 class Ridge {
-private:
-    double lambda_;
 public:
     Vector fit(Matrix& x, Vector& y, double lambda);
     Vector fit(Matrix& x, Vector& y, std::vector<double> lambda);
