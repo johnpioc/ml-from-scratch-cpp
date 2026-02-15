@@ -3,8 +3,7 @@
 #include <mlfs/core/vector.hpp>
 #include <vector>
 
-namespace mlfs {
-namespace core {
+namespace mlfs::core {
 
 class Matrix {
 private:
@@ -58,5 +57,4 @@ public:
 /* Returns identity matrix of given order */
 Matrix identity(int order);
 
-}
 }

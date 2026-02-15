@@ -8,7 +8,8 @@ add_executable(mlfs
     src/main.cpp
     src/core/matrix.cpp
     src/core/vector.cpp
-    src/models/linear_regression.cpp
+    src/models/tuning/evaluation_metric.cpp
+    src/models/tuning/fitting_policy.cpp
 )
 
 target_include_directories(mlfs PUBLIC

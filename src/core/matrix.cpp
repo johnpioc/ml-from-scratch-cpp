@@ -167,7 +167,7 @@ Matrix Matrix::prependOnes() {
 // ==============================================================================================
 // MATRIX HELPERS
 // ==============================================================================================
-Matrix identity(int order) {
+Matrix mlfs::core::identity(int order) {
     Matrix res(order, order);
 
     for (int i = 0; i < order; i++) {
