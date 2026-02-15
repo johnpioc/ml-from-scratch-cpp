@@ -4,7 +4,9 @@
 
 using namespace mlfs::core;
 
-// Matrix Methods
+// ==============================================================================================
+// MATRIX METHODS
+// ==============================================================================================
 Matrix::Matrix(int numRows, int numCols): 
     numRows(numRows),
     numCols(numCols) {
@@ -66,6 +68,31 @@ Vector Matrix::operator*(Vector& vec) {
     return res;
 }
 
+Matrix Matrix::operator*(double scalar) {
+    Matrix res(this->data_);
+
+    for (int r = 0; r < res.numRows; r++) {
+        for (int c = 0; c < res.numCols; c++) {
+            res.set(r, c, res.get(r,c) * scalar);
+        }
+    }
+
+    return res;
+}
+
+Matrix Matrix::operator+(Matrix& other) {
+    // TODO: ensure both matrices are the same shape
+    Matrix res(this->data_);
+
+    for (int r = 0; r < res.numRows; r++) {
+        for (int c = 0; c < res.numCols; c++) {
+            res.set(r,c, this->get(r,c) + other.get(r,c));
+        }
+    }
+
+    return res;
+}
+
 Matrix Matrix::transpose() {
     Matrix res(this->numCols, this->numRows);
 
@@ -90,7 +117,7 @@ Matrix Matrix::inverse() {
             aug.set(i, j, this->get(i, j));
             if (i == j) aug.set(i, j + order, 1.0);
         }
-    }
+    };
 
     for (int i = order - 1; i > 0; i--) {
         if (aug.get(i - 1, 0) < aug.get(i, 0)) {
@@ -136,3 +163,17 @@ Matrix Matrix::prependOnes() {
 
     return augmented;
 }
+
+// ==============================================================================================
+// MATRIX HELPERS
+// ==============================================================================================
+Matrix identity(int order) {
+    Matrix res(order, order);
+
+    for (int i = 0; i < order; i++) {
+        res.set(i, i, 1.0);
+    }
+
+    return res;
+}
+
