@@ -39,6 +39,12 @@ public:
     /* Matrix multiplication with vector operator overload */
     Vector operator*(Vector& vec);
 
+    /* Matrix Scalar Multiplication */
+    Matrix operator*(double scalar);
+
+    /* Matrix addition */
+    Matrix operator+(Matrix& other);
+
     /* Returns the transposed version of this matrix */
     Matrix transpose();
 
@@ -48,6 +54,9 @@ public:
     /* Augments the matrix to prepend a column of 1.0s at the start */
     Matrix prependOnes();
 };
+
+/* Returns identity matrix of given order */
+Matrix identity(int order);
 
 }
 }

@@ -1,3 +1,4 @@
+#include "mlfs/core/fitting_policy.hpp"
 #include <cmath>
 #include <mlfs/core/matrix.hpp>
 #include <mlfs/core/vector.hpp>
@@ -6,22 +7,20 @@
 using namespace mlfs::models;
 using namespace mlfs::core;
 
-void LinearRegression::fit(Matrix& x, Vector& y) {
-    Matrix augmented = x.prependOnes();
-
-    // Get OLS solution
-    Matrix XT = augmented.transpose();
-    Matrix XTX = XT * augmented;
-    Matrix XTX_inv = XTX.inverse();
-    this->beta_ = XTX_inv * XT * y;
+template<LinearRegressionFittingPolicy FittingPolicy>
+template<typename... Args>
+void LinearRegression<FittingPolicy>::fit(Matrix& x, Vector& y, Args... args) {
+    this->beta_ = this->policy_.fit(x, y, args...);
 }
 
-Vector LinearRegression::predict(Matrix& x) {
+template<LinearRegressionFittingPolicy FittingPolicy>
+Vector LinearRegression<FittingPolicy>::predict(Matrix& x) {
     Matrix augmented = x.prependOnes();
     return augmented * this->beta_;
 }
 
-double LinearRegression::evaluate(Vector& yPred, Vector& yTrue) {
+template<LinearRegressionFittingPolicy FittingPolicy>
+double LinearRegression<FittingPolicy>::evaluate(Vector& yPred, Vector& yTrue) {
     int n = yPred.numCells;
 
     // Calculate mean response
