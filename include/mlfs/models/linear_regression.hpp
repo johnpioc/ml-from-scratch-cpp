@@ -1,5 +1,6 @@
 #pragma once
 
+#include "mlfs/models/detail/cross_validator.hpp"
 #include "mlfs/models/tuning/evaluation_metric.hpp"
 #include <concepts>
 #include <mlfs/core/matrix.hpp>
@@ -19,6 +20,7 @@ private:
     core::Vector beta_{0};
     FittingPolicy policy_;
     EvaluationMetric metric_;
+    detail::CrossValidator<EvaluationMetric> crossValidator_;
 
 public:
     template <typename... Args>
@@ -28,7 +30,6 @@ public:
     /* Takes a given matrix of observation predictors and a given vector of observation responses
      * and performs ordinary least squares to calculate model intercept and coefficients
      * */
-    template<typename... Args>
     void fit(core::Matrix& x, core::Vector& y) { 
         this->beta_ = this->policy_.fit(x, y);
     }
@@ -44,6 +45,12 @@ public:
     template<typename... Args>
     double evaluate(core::Vector& yPred, core::Vector& yTrue, Args... args) {
         return this->metric_.evaluate(yPred, yTrue, std::forward<Args>(args)...);
+    }
+
+    template<typename... Args>
+    double crossValidate(core::Matrix& x, core::Vector& y, int numOfFolds, Args... args) {
+        return this->crossValidator_.crossValidate(*this, x, y, numOfFolds,
+            std::forward<Args>(args)...);
     }
 };
 

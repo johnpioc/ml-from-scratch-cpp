@@ -165,8 +165,7 @@ void runModel(ModelType modelType, Data data) {
             auto end = std::chrono::high_resolution_clock::now();
             std::chrono::duration<double, std::milli> duration = end - start;
 
-            mlfs::core::Vector yPred = model.predict(data.xTest);
-            double rSquared = model.evaluate(yPred, data.yTest);
+            double rSquared = model.crossValidate(data.xTrain, data.yTrain, 4);
 
             std::cout << "Implementation Training Time: " << std::fixed << std::setprecision(4)
                 << duration.count() << " Milliseconds\n";

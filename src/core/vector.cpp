@@ -23,6 +23,16 @@ double Vector::get(int i) {
     return this->data_[i];
 }
 
+std::vector<double> Vector::getData() { return this->data_; }
+
+std::vector<double> Vector::getDataByIndices(std::vector<int> indices) {
+    std::vector<double> result;
+
+    for (int index : indices) { result.push_back(this->get(index)); }
+
+    return result;
+}
+
 void Vector::transpose() {
     this->isColVector = !this->isColVector;
 }
