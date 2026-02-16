@@ -1,27 +1,27 @@
 #pragma once
 
+#include <concepts>
 #include <mlfs/core/vector.hpp>
 #include <mlfs/core/matrix.hpp>
 #include <mlfs/models/tuning/traits.hpp>
-#include <utility>
 
 namespace mlfs::models::tuning {
 
-template<typename T, typename... Args>
-concept FittingPolicy = requires(T policy, core::Matrix& x, core::Vector& y, 
-    Args&&... args) {
-    { policy.fit(x, y, std::forward<Args>(args)...) } -> std::same_as<core::Vector>;
+template<typename T>
+concept FittingPolicy = 
+    requires(T policy, core::Matrix& x, core::Vector& y) {
+        { policy.fit(x, y) } -> std::same_as<core::Vector>;
 };
 
 // =============================================================================================== 
 // LINEAR REGRESSION FITTING POLICIES
 // =============================================================================================== 
 
-template<typename T, typename... Args>
+template<typename T>
 concept LinearRegressionFittingPolicy = 
     FittingPolicy<T> && forLinearRegression<T> &&
-    requires(T policy, core::Matrix& x, core::Vector& y, Args&&... args) {
-    { policy.fit(x, y, std::forward<Args>(args)...) } -> std::same_as<core::Vector>;
+    requires(T policy, core::Matrix& x, core::Vector& y) {
+    { policy.fit(x, y) } -> std::same_as<core::Vector>;
 };
 
 class OLS {
@@ -33,9 +33,11 @@ template<>
 inline constexpr bool forLinearRegression<OLS> = true;
 
 class Ridge {
+private:
+    const double lambda_;
 public:
+    explicit Ridge(double lambda) : lambda_(lambda) {}
     core::Vector fit(core::Matrix& x, core::Vector& y);
-    core::Vector fit(core::Matrix& x, core::Vector& y, double lambda);
 };
 
 template<>

@@ -17,15 +17,11 @@ Vector OLS::fit(Matrix& x, Vector& y) {
 }
 
 Vector Ridge::fit(Matrix& x, Vector& y) {
-    return this->fit(x, y, 0.1);
-}
-
-Vector Ridge::fit(Matrix& x, Vector& y, double lambda) {
     Matrix augmented = x.prependOnes();
     Matrix XT = augmented.transpose();
     Matrix XTX = XT * augmented;
 
-    Matrix lambdaMat = identity(XTX.numRows);
+    Matrix lambdaMat = identity(XTX.numRows) * this->lambda_;
     Matrix XTX_lambdaMat = XTX + lambdaMat;
     Matrix XTX_lambdaMat_inv = XTX_lambdaMat.inverse();
 

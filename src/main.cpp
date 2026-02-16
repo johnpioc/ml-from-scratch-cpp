@@ -159,7 +159,7 @@ void runModel(ModelType modelType, Data data) {
 
     switch(modelType) {
         case ModelType::LINEAR_REGRESSION:
-            mlfs::models::LinearRegression<mlfs::models::tuning::Ridge> model;
+            mlfs::models::LinearRegression<mlfs::models::tuning::Ridge> model(10);
             model.fit(data.xTrain, data.yTrain);
 
             auto end = std::chrono::high_resolution_clock::now();
