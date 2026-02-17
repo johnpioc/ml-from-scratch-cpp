@@ -29,6 +29,10 @@ public:
     /* Retrives a value at a given position in the vector */
     double get(int i);
 
+    std::vector<double> getData();
+
+    std::vector<double> getDataByIndices(std::vector<int> indices);
+
     /* Col Vector <=> Row Vector */
     void transpose();
 

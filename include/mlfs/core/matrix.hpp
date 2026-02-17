@@ -3,8 +3,7 @@
 #include <mlfs/core/vector.hpp>
 #include <vector>
 
-namespace mlfs {
-namespace core {
+namespace mlfs::core {
 
 class Matrix {
 private:
@@ -29,6 +28,8 @@ public:
 
     /* Retrives the row at the given row index */
     Vector getRow(int r);
+
+    Matrix getRows(std::vector<int>& indices);
 
     /* Sets the value at a given row and column number */
     void set(int r, int c, double val);
@@ -58,5 +59,4 @@ public:
 /* Returns identity matrix of given order */
 Matrix identity(int order);
 
-}
 }

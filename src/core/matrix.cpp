@@ -30,6 +30,16 @@ Vector Matrix::getRow(int r) {
     return Vector(this->data_[r]);
 }
 
+Matrix Matrix::getRows(std::vector<int>& indices) {
+    std::vector<std::vector<double>> rows;
+
+    for (int index : indices) {
+        rows.push_back(this->getRow(index).getData());
+    }
+
+    return Matrix(rows);
+}
+
 void Matrix::set(int r, int c, double val) {
     this->data_[r][c] = val;
 }
@@ -167,7 +177,7 @@ Matrix Matrix::prependOnes() {
 // ==============================================================================================
 // MATRIX HELPERS
 // ==============================================================================================
-Matrix identity(int order) {
+Matrix mlfs::core::identity(int order) {
     Matrix res(order, order);
 
     for (int i = 0; i < order; i++) {
