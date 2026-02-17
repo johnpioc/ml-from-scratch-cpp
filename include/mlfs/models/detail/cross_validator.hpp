@@ -13,11 +13,10 @@ private:
     EvaluationMetric metric_;
 
 public:
-    template <Model Model, typename... Args>
-    double crossValidate(Model model, core::Matrix& x, core::Vector& y, int numOfFolds, 
-        Args... args) {
+    template <Model Model>
+    double crossValidate(Model model, core::Matrix& x, core::Vector& y, int numOfFolds) {
         int numPerFold = x.numRows / numOfFolds;
-        
+       
         double sum = 0.0;
         for (int i = 0; i < numOfFolds; i++) {
             // Retrieve train and test indices
@@ -39,7 +38,7 @@ public:
 
             model.fit(xTrain, yTrain);
             core::Vector yPred = model.predict(xTest);
-            sum += model.evaluate(yPred, yTest, std::forward<Args>(args)...);
+            sum += model.evaluate(yPred, yTest);
         }
 
         return sum / (double) numOfFolds;

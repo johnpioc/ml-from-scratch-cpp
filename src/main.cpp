@@ -3,16 +3,16 @@
 #include <mlfs/models/linear_regression.hpp>
 #include <mlfs/models/tuning/evaluation_metric.hpp>
 #include <mlfs/models/tuning/fitting_policy.hpp>
+#include <mlfs/models/tuning/grid_searcher.hpp>
 
-#include <ratio>
 #include <stdexcept>
 #include <string>
 #include <unordered_set>
 #include <vector>
 #include <fstream>
 #include <sstream>
-#include <iostream>
 #include <chrono>
+#include <iostream>
 
 // ===============================================================================================
 // CONSTANTS AND TYPES
@@ -159,16 +159,17 @@ void runModel(ModelType modelType, Data data) {
 
     switch(modelType) {
         case ModelType::LINEAR_REGRESSION:
-            mlfs::models::LinearRegression<mlfs::models::tuning::Ridge> model(10);
-            model.fit(data.xTrain, data.yTrain);
+            mlfs::models::tuning::GridSearcher<
+                mlfs::models::LinearRegression<mlfs::models::tuning::Ridge>
+            > gridSearcher;
 
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::milli> duration = end - start;
+            std::vector<double> lambdas = { 0.01, 0.1, 1, 2, 5, 10 };
+            mlfs::models::LinearRegression<mlfs::models::tuning::Ridge> model 
+                = gridSearcher.get(data.xTrain, data.yTest, lambdas);
+            mlfs::core::Vector yPred = model.predict(data.xTest);
 
-            double rSquared = model.crossValidate(data.xTrain, data.yTrain, 4);
+            double rSquared = model.evaluate(yPred, data.yTest);
 
-            std::cout << "Implementation Training Time: " << std::fixed << std::setprecision(4)
-                << duration.count() << " Milliseconds\n";
             std::cout << "Implementation R Squared Value: " << std::fixed << std::setprecision(2)
                 << rSquared << std::endl;
 

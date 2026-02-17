@@ -8,7 +8,7 @@ using namespace mlfs::models::tuning;
 // =============================================================================================== 
 // LINEAR REGRESSION EVALUATION METRICS
 // =============================================================================================== 
-double RSquared::evaluate(core::Vector& yPred, core::Vector& yTrue) {
+double RSquared::evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors) {
     int n = yPred.numCells;
 
     // Calculate mean response

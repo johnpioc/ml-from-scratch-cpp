@@ -10,7 +10,7 @@ namespace mlfs::models::tuning {
 template<typename T>
 concept FittingPolicy = 
     requires(T policy, core::Matrix& x, core::Vector& y) {
-        { policy.fit(x, y) } -> std::same_as<core::Vector>;
+        { policy.fit(x, y) } -> std::same_as<std::pair<core::Vector, int>>;
 };
 
 // =============================================================================================== 
@@ -21,12 +21,12 @@ template<typename T>
 concept LinearRegressionFittingPolicy = 
     FittingPolicy<T> && forLinearRegression<T> &&
     requires(T policy, core::Matrix& x, core::Vector& y) {
-    { policy.fit(x, y) } -> std::same_as<core::Vector>;
+    { policy.fit(x, y) } -> std::same_as<std::pair<core::Vector, int>>;
 };
 
 class OLS {
 public:
-    core::Vector fit(core::Matrix& x, core::Vector& y);
+    std::pair<core::Vector, int> fit(core::Matrix& x, core::Vector& y);
 };
 
 template<>
@@ -34,10 +34,10 @@ inline constexpr bool forLinearRegression<OLS> = true;
 
 class Ridge {
 private:
-    const double lambda_;
+    double lambda_;
 public:
     explicit Ridge(double lambda) : lambda_(lambda) {}
-    core::Vector fit(core::Matrix& x, core::Vector& y);
+    std::pair<core::Vector, int> fit(core::Matrix& x, core::Vector& y);
 };
 
 template<>

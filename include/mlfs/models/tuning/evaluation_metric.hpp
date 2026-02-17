@@ -7,26 +7,26 @@
 
 namespace mlfs::models::tuning {
 
-template <typename T, typename... Args>
-concept EvaluationMetric = requires(T metric, core::Vector& yPred, core::Vector& yTrue, 
-    Args&&... args) {
-    { metric.evaluate(yPred, yTrue, std::forward<Args>(args)...) } -> std::same_as<double>;
+template <typename T>
+concept EvaluationMetric = requires(T metric, core::Vector& yPred, core::Vector& yTrue,
+    int numOfPredictors) {
+    { metric.evaluate(yPred, yTrue, numOfPredictors) } -> std::same_as<double>;
 };
 
 // =============================================================================================== 
 // LINEAR REGRESSION EVALUATION METRICS
 // =============================================================================================== 
 //
-template <typename T, typename... Args>
+template <typename T>
 concept LinearRegressionEvaluationMetric = 
     EvaluationMetric<T> && forLinearRegression<T> &&
-    requires(T metric, core::Vector& yPred, core::Vector& yTrue, Args&&... args) {
-        { metric.evaluate(yPred, yTrue, std::forward<Args>(args)...) } -> std::same_as<double>;
+    requires(T metric, core::Vector& yPred, core::Vector& yTrue, int numOfPredictors) {
+        { metric.evaluate(yPred, yTrue, numOfPredictors) } -> std::same_as<double>;
 };
 
 class RSquared {
 public:
-    double evaluate(core::Vector& yPred, core::Vector& yTrue);
+    double evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors);
 };
 
 template<>

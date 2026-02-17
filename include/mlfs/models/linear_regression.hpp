@@ -21,6 +21,7 @@ private:
     FittingPolicy policy_;
     EvaluationMetric metric_;
     detail::CrossValidator<EvaluationMetric> crossValidator_;
+    int numOfPredictors_;
 
 public:
     template <typename... Args>
@@ -31,7 +32,9 @@ public:
      * and performs ordinary least squares to calculate model intercept and coefficients
      * */
     void fit(core::Matrix& x, core::Vector& y) { 
-        this->beta_ = this->policy_.fit(x, y);
+        std::pair<core::Vector, int> results = this->policy_.fit(x, y);
+        this->beta_ = results.first;
+        this->numOfPredictors_ = results.second;
     }
 
     /* Takes a given matrix of observation and predicts a vector of responses based on 
@@ -42,15 +45,12 @@ public:
         return augmented * this->beta_;
     }
 
-    template<typename... Args>
-    double evaluate(core::Vector& yPred, core::Vector& yTrue, Args... args) {
-        return this->metric_.evaluate(yPred, yTrue, std::forward<Args>(args)...);
+    double evaluate(core::Vector& yPred, core::Vector& yTrue) {
+        return this->metric_.evaluate(yPred, yTrue, this->numOfPredictors_);
     }
 
-    template<typename... Args>
-    double crossValidate(core::Matrix& x, core::Vector& y, int numOfFolds, Args... args) {
-        return this->crossValidator_.crossValidate(*this, x, y, numOfFolds,
-            std::forward<Args>(args)...);
+    double crossValidate(core::Matrix& x, core::Vector& y, int numOfFolds) {
+        return this->crossValidator_.crossValidate(*this, x, y, numOfFolds);
     }
 };
 
