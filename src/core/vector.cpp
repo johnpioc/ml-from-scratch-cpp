@@ -1,8 +1,8 @@
 #include <algorithm>
-#include <mlfs/core/vector.hpp>
+#include <jmll/core/vector.hpp>
 #include <vector>
 
-using namespace mlfs::core;
+using namespace jmll::core;
 
 Vector::Vector(int numCells):
     numCells(numCells) {

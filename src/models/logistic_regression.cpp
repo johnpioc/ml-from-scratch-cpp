@@ -1,12 +1,12 @@
 #include <cmath>
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/core/vector.hpp>
-#include <mlfs/models/logistic_regression.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/models/logistic_regression.hpp>
 
 #define LEARNING_RATE 0.00001
 
-using namespace mlfs::core;
-using namespace mlfs::models;
+using namespace jmll::core;
+using namespace jmll::models;
 
 void LogisticRegression::fit(Matrix& x, Vector& y) {
     Matrix augmented = x.prependOnes();

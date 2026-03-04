@@ -2,8 +2,7 @@
 
 #include <vector>
 
-namespace mlfs {
-namespace core {
+namespace jmll::core {
 
 class Vector {
 private:
@@ -48,5 +47,4 @@ public:
     /* Vector Subtraction */
     Vector operator-(Vector& rhs);
 };
-}
 }

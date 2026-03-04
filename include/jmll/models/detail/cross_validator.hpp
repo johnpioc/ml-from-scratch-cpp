@@ -1,11 +1,11 @@
 #pragma once
 
-#include <mlfs/models/tuning/evaluation_metric.hpp>
-#include <mlfs/models/detail/model.hpp>
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/core/vector.hpp>
+#include <jmll/models/tuning/evaluation_metric.hpp>
+#include <jmll/models/detail/model.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
 
-namespace mlfs::models::detail {
+namespace jmll::models::detail {
 
 template <tuning::EvaluationMetric EvaluationMetric>
 class CrossValidator {

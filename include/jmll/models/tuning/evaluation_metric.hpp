@@ -1,11 +1,11 @@
 #pragma once
 
 #include <concepts>
-#include <mlfs/core/vector.hpp>
-#include <mlfs/models/tuning/traits.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/models/tuning/traits.hpp>
 #include <utility>
 
-namespace mlfs::models::tuning {
+namespace jmll::models::tuning {
 
 template <typename T>
 concept EvaluationMetric = requires(T metric, core::Vector& yPred, core::Vector& yTrue,

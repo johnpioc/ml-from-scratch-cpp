@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 3.20)
-project(mlfs)
+project(jmll)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(mlfs
+add_executable(jmll
     src/main.cpp
     src/core/matrix.cpp
     src/core/vector.cpp
@@ -12,6 +12,6 @@ add_executable(mlfs
     src/models/tuning/fitting_policy.cpp
 )
 
-target_include_directories(mlfs PUBLIC
+target_include_directories(jmll PUBLIC
     "${CMAKE_CURRENT_SOURCE_DIR}/include"
 )

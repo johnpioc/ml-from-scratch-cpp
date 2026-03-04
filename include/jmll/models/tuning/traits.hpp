@@ -1,6 +1,6 @@
 #pragma once
 
-namespace mlfs::models::tuning {
+namespace jmll::models::tuning {
 
 template <typename T>
 inline constexpr bool forLinearRegression = false;
