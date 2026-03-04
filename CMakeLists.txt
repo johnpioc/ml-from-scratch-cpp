@@ -1,15 +1,17 @@
-cmake_minimum_required(VERSION 4.1.2)
-project(ml_from_scratch)
+cmake_minimum_required(VERSION 3.20)
+project(jmll)
 
-add_executable(${PROJECT_NAME} src/main.cpp src/models/Model.h)
-add_library(matrix src/Matrix.cpp)
-add_library(linear_regression src/models/LinearRegression.cpp)
-add_library(logistic_regression src/models/LogisticRegression.cpp)
-add_library(qda src/models/QuadraticDiscriminantAnalysis.cpp)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-target_link_libraries(${PROJECT_NAME} matrix)
-target_link_libraries(${PROJECT_NAME} linear_regression)
-target_link_libraries(${PROJECT_NAME} logistic_regression)
-target_link_libraries(${PROJECT_NAME} qda)
-target_include_directories(${PROJECT_NAME} PRIVATE src)
-target_include_directories(${PROJECT_NAME} PRIVATE src/models)
+add_executable(jmll
+    src/main.cpp
+    src/core/matrix.cpp
+    src/core/vector.cpp
+    src/models/tuning/evaluation_metric.cpp
+    src/models/tuning/fitting_policy.cpp
+)
+
+target_include_directories(jmll PUBLIC
+    "${CMAKE_CURRENT_SOURCE_DIR}/include"
+)
