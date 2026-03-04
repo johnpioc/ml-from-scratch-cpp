@@ -1,10 +1,10 @@
 #pragma once
 
 #include <concepts>
-#include <mlfs/models/detail/model.hpp>
+#include <jmll/models/detail/model.hpp>
 #include <utility>
 
-namespace mlfs::models::tuning {
+namespace jmll::models::tuning {
 
 template <detail::Model ModelType>
 class GridSearcher {

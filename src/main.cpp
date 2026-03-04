@@ -1,9 +1,9 @@
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/core/vector.hpp>
-#include <mlfs/models/linear_regression.hpp>
-#include <mlfs/models/tuning/evaluation_metric.hpp>
-#include <mlfs/models/tuning/fitting_policy.hpp>
-#include <mlfs/models/tuning/grid_searcher.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/models/linear_regression.hpp>
+#include <jmll/models/tuning/evaluation_metric.hpp>
+#include <jmll/models/tuning/fitting_policy.hpp>
+#include <jmll/models/tuning/grid_searcher.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -25,7 +25,7 @@ const std::string BOSTON_FILEPATH = "../data/Boston.csv";
 const int BOSTON_N = 506;
 
 const std::string USAGE_MSG = 
-    "[Usage]: ./mlfs [model_type]\n"
+    "[Usage]: ./jmll [model_type]\n"
     "Model Types:\n"
     "Linear Regression: -linReg";
 
@@ -35,10 +35,10 @@ enum ModelType {
 };
 
 struct Data {
-    mlfs::core::Matrix xTrain;
-    mlfs::core::Matrix xTest;
-    mlfs::core::Vector yTrain;
-    mlfs::core::Vector yTest;
+    jmll::core::Matrix xTrain;
+    jmll::core::Matrix xTest;
+    jmll::core::Vector yTrain;
+    jmll::core::Vector yTest;
 };
 
 // ===============================================================================================
@@ -146,10 +146,10 @@ Data getBostonData(std::vector<int> ignoreIndexes) {
     }
 
     return {
-        mlfs::core::Matrix(xTrainData),
-        mlfs::core::Matrix(xTestData),
-        mlfs::core::Vector(yTrainData),
-        mlfs::core::Vector(yTestData)
+        jmll::core::Matrix(xTrainData),
+        jmll::core::Matrix(xTestData),
+        jmll::core::Vector(yTrainData),
+        jmll::core::Vector(yTestData)
     };
 }
 
@@ -159,14 +159,14 @@ void runModel(ModelType modelType, Data data) {
 
     switch(modelType) {
         case ModelType::LINEAR_REGRESSION:
-            mlfs::models::tuning::GridSearcher<
-                mlfs::models::LinearRegression<mlfs::models::tuning::Ridge>
+            jmll::models::tuning::GridSearcher<
+                jmll::models::LinearRegression<jmll::models::tuning::Ridge>
             > gridSearcher;
 
             std::vector<double> lambdas = { 0.01, 0.1, 1, 2, 5, 10 };
-            mlfs::models::LinearRegression<mlfs::models::tuning::Ridge> model 
+            jmll::models::LinearRegression<jmll::models::tuning::Ridge> model 
                 = gridSearcher.get(data.xTrain, data.yTest, lambdas);
-            mlfs::core::Vector yPred = model.predict(data.xTest);
+            jmll::core::Vector yPred = model.predict(data.xTest);
 
             double rSquared = model.evaluate(yPred, data.yTest);
 

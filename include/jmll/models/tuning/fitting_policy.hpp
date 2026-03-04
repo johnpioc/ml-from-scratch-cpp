@@ -1,11 +1,11 @@
 #pragma once
 
 #include <concepts>
-#include <mlfs/core/vector.hpp>
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/models/tuning/traits.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/models/tuning/traits.hpp>
 
-namespace mlfs::models::tuning {
+namespace jmll::models::tuning {
 
 template<typename T>
 concept FittingPolicy = 

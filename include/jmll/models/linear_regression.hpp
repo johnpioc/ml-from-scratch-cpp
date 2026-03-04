@@ -1,14 +1,14 @@
 #pragma once
 
-#include "mlfs/models/detail/cross_validator.hpp"
-#include "mlfs/models/tuning/evaluation_metric.hpp"
+#include "jmll/models/detail/cross_validator.hpp"
+#include "jmll/models/tuning/evaluation_metric.hpp"
 #include <concepts>
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/core/vector.hpp>
-#include <mlfs/models/tuning/fitting_policy.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/models/tuning/fitting_policy.hpp>
 #include <utility>
 
-namespace mlfs {
+namespace jmll {
 namespace models {
 
 template<

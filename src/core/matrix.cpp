@@ -1,8 +1,8 @@
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/core/vector.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
 #include <vector>
 
-using namespace mlfs::core;
+using namespace jmll::core;
 
 // ==============================================================================================
 // MATRIX METHODS
@@ -177,7 +177,7 @@ Matrix Matrix::prependOnes() {
 // ==============================================================================================
 // MATRIX HELPERS
 // ==============================================================================================
-Matrix mlfs::core::identity(int order) {
+Matrix jmll::core::identity(int order) {
     Matrix res(order, order);
 
     for (int i = 0; i < order; i++) {

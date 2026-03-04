@@ -1,10 +1,10 @@
 #pragma once
 
 #include <concepts>
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/core/vector.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
 
-namespace mlfs::models::detail {
+namespace jmll::models::detail {
 template <typename T, typename... Args>
 concept Model = 
     requires(T model, core::Matrix& x, core::Vector& y, int numOfFolds) {

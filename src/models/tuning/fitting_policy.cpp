@@ -1,9 +1,9 @@
-#include <mlfs/core/vector.hpp>
-#include <mlfs/core/matrix.hpp>
-#include <mlfs/models/tuning/fitting_policy.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/core/matrix.hpp>
+#include <jmll/models/tuning/fitting_policy.hpp>
 
-using namespace mlfs::core;
-using namespace mlfs::models::tuning;
+using namespace jmll::core;
+using namespace jmll::models::tuning;
 
 // ===============================================================================================
 // LINEAR REGRESSION FITTING POLICIES

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <mlfs/core/vector.hpp>
-#include <mlfs/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
+#include <jmll/core/matrix.hpp>
 
-namespace mlfs {
+namespace jmll {
 namespace models {
 
 class LogisticRegression {
