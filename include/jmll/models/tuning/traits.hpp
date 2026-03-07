@@ -3,5 +3,5 @@
 namespace jmll::models::tuning {
 
 template <typename T>
-inline constexpr bool forLinearRegression = false;
+inline constexpr bool forRegression = false;
 }

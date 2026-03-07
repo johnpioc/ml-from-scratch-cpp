@@ -13,7 +13,7 @@ namespace models {
 
 template<
     tuning::LinearRegressionFittingPolicy FittingPolicy = tuning::OLS,
-    tuning::LinearRegressionEvaluationMetric EvaluationMetric = tuning::RSquared
+    tuning::RegressionEvaluationMetric EvaluationMetric = tuning::RSquared
 >
 class LinearRegression {
 private:
