@@ -10,6 +10,8 @@ add_executable(jmll
     src/core/vector.cpp
     src/models/tuning/evaluation_metric.cpp
     src/models/tuning/fitting_policy.cpp
+    src/data_preprocessing/datasets.cpp
+    src/data_preprocessing/train_test_split.cpp
 )
 
 target_include_directories(jmll PUBLIC
