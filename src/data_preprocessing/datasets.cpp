@@ -7,18 +7,19 @@
 #include <fstream>
 #include <sstream>
 
-using namespace jmll::data_preprocessing;
 using namespace jmll::core;
 
 //===============================================================================================
 // CONSTANT VALUES
 //===============================================================================================
-const std::string BOSTON_FILEPATH = "../../data/Boston.csv";
+const std::string BOSTON_FILEPATH = "../data/Boston.csv";
 const int BOSTON_LABEL_INDEX = 14;
 
 //===============================================================================================
 // DATASET FUNCTIONS
 //===============================================================================================
+namespace jmll::data_preprocessing {
+
 TrainTestSplit getBostonData(double testSplit) {
     std::vector<std::vector<double>> xData;
     std::vector<double> yData;
@@ -40,15 +41,20 @@ TrainTestSplit getBostonData(double testSplit) {
         std::vector<double> row;
 
         while(std::getline(ss, cell, ',')) {
+            if (cellIndex++ == 0) continue;
+
             if (cellIndex == BOSTON_LABEL_INDEX) 
                 yData.push_back(std::stod(cell));
             else row.push_back(std::stod(cell));
-            cellIndex++;
         }
+
+        xData.push_back(row);
     }
 
     Matrix x(xData);
     Vector y(yData);
 
     return TrainTestSplit(x, y, testSplit);
+}
+
 }
