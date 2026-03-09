@@ -1,10 +1,11 @@
 #pragma once
 
 #include "jmll/models/detail/cross_validator.hpp"
+#include <jmll/core/lpnorm.hpp>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
 #include <jmll/models/tuning/evaluation_metric.hpp>
-#include <jmll/models/tuning/fitting_policy.hpp>
+#include <jmll/models/tuning/traits.hpp>
 
 using namespace jmll::core;
 using namespace jmll::models::tuning;
@@ -12,14 +13,14 @@ using namespace jmll::models::tuning;
 namespace jmll::models {
 
 template<
-    tuning::KNNDistanceEquation DistanceEquation = tuning::Euclidean,
+    DistanceEquation DistanceEquation = core::Euclidean,
     tuning::RegressionEvaluationMetric EvaluationMetric = tuning::RSquared
 >
 class KNearestRegressor {
 private:
     DistanceEquation distanceEquation_;
     EvaluationMetric metric_;
-    KNNStructure space_;
+    KNNStructure<DistanceEquation> space_;
     detail::CrossValidator<EvaluationMetric> crossValidator_;
     int numOfPredictors_;
 
@@ -29,7 +30,7 @@ public:
     KNearestRegressor(int k) : k(k) {};
 
     void fit(Matrix& x, Vector& y) {
-        std::pair<KNNStructure, int> results = this->distanceEquation_.fit(x,y);
+        std::pair<KNNStructure<DistanceEquation>, int> results = this->distanceEquation_.fit(x,y);
         this->space_ = results.first;
         this->numOfPredictors_ = results.second;
     }

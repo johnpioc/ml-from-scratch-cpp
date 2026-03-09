@@ -2,8 +2,10 @@
 
 #include <vector>
 #include <memory>
+
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
+#include <jmll/core/lpnorm.hpp>
 
 namespace jmll::core {
 
@@ -17,11 +19,13 @@ public:
     KDTreeNode(std::vector<double>& data, double label);
 };
 
+template <DistanceEquation DistanceEquation>
 class KDTree {
 private:
     std::unique_ptr<KDTreeNode> root_ = nullptr;
     int numOfDimensions_;
     int size_;
+    DistanceEquation distanceEquation_;
 
 public:
     KDTree(Matrix& dataPoints, Vector& labels);
