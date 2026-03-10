@@ -1,10 +1,13 @@
 #pragma once
 
-#include "jmll/models/detail/cross_validator.hpp"
+#include <memory>
+
 #include <jmll/core/lpnorm.hpp>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
 #include <jmll/core/kd_tree.hpp>
+
+#include <jmll/models/detail/cross_validator.hpp>
 #include <jmll/models/tuning/evaluation_metric.hpp>
 #include <jmll/models/tuning/traits.hpp>
 
@@ -21,9 +24,12 @@ class KNearestRegressor {
 private:
     DistanceEquation distanceEquation_;
     EvaluationMetric metric_;
-    KNNStructure<DistanceEquation> space_;
     detail::CrossValidator<EvaluationMetric> crossValidator_;
     int numOfPredictors_;
+
+    // KD Tree or Ball Tree based on number of dimensions
+    std::unique_ptr<KDTree<DistanceEquation>> kdTree_ = nullptr;
+    std::unique_ptr<BallTree> ballTree_ = nullptr;
 
 public:
     int k;
@@ -31,13 +37,14 @@ public:
     KNearestRegressor(int k) : k(k) {};
 
     void fit(Matrix& x, Vector& y) {
-        this->space_ = KDTree<DistanceEquation>(x, y);
+        this->kdTree_ = std::make_unique<KDTree<DistanceEquation>>(x, y);
     }
 
     Vector predict(Matrix& x) {
         Vector predictions(x.numRows);
         for (int i = 0; i < x.numRows; i++) {
-            Vector kNearest = this->space_.getKNearest(x.getRow(i), this->k);
+            Vector currentRow = x.getRow(i);
+            Vector kNearest = this->kdTree_->getKNearest(currentRow, this->k);
             predictions.set(i, kNearest.mean());
         }
         return predictions;

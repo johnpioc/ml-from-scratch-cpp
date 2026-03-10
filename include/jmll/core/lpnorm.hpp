@@ -13,7 +13,8 @@ concept DistanceEquation =
 
 template <int P>
 class LPNorm {
-    double calculate(Vector& v1, Vector& v2) {
+public:
+    static double calculate(Vector& v1, Vector& v2) {
         double sum = 0.0;
         for (int i = 0; i < v1.numCells; i++) {
             sum += std::pow(std::abs(v1.get(i) - v2.get(i)), P);

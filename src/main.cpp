@@ -3,6 +3,7 @@
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
 #include <jmll/models/linear_regression.hpp>
+#include <jmll/models/k_nearest_regressor.hpp>
 #include <jmll/models/tuning/evaluation_metric.hpp>
 #include <jmll/models/tuning/fitting_policy.hpp>
 #include <jmll/models/tuning/grid_searcher.hpp>
@@ -21,11 +22,13 @@ const double TEST_SPLIT = 0.2;
 const std::string USAGE_MSG = 
     "[Usage]: ./jmll [model_type]\n"
     "Model Types:\n"
-    "Linear Regression: -linReg";
+    "Linear Regression: -linReg"
+    "KNN Regressor: -knnReg";
 
 enum ModelType {
     NONE,
-    LINEAR_REGRESSION
+    LINEAR_REGRESSION,
+    KNN_REGRESSOR
 };
 
 // ===============================================================================================
@@ -60,6 +63,7 @@ ModelType parseCliArguments(int argc, char* argv[]) {
 
         if (modelType != ModelType::NONE) throwUsageError();
         else if (current == "-linReg") modelType = ModelType::LINEAR_REGRESSION;
+        else if (current == "-knnReg") modelType = ModelType::KNN_REGRESSOR;
         else throwUsageError();
 
         argc--;
@@ -84,15 +88,26 @@ void runModel(ModelType modelType) {
     auto start = std::chrono::high_resolution_clock::now();
 
     switch(modelType) {
-        case ModelType::LINEAR_REGRESSION:
+        // case ModelType::LINEAR_REGRESSION:
+        //     TrainTestSplit data = getBostonData(TEST_SPLIT);
+        //     LinearRegression model;
+        //     model.fit(data.xTrain, data.yTrain);
+        //     Vector yPred = model.predict(data.xTest);
+        //     double rSquared = model.evaluate(yPred, data.yTest);
+
+        //     std::cout << "Implementation R Squared Value: " << std::fixed << std::setprecision(2)
+        //         << rSquared << std::endl;
+
+        //     break;
+        case ModelType::KNN_REGRESSOR:
             TrainTestSplit data = getBostonData(TEST_SPLIT);
-            LinearRegression model;
+            KNearestRegressor model(5);
             model.fit(data.xTrain, data.yTrain);
             Vector yPred = model.predict(data.xTest);
             double rSquared = model.evaluate(yPred, data.yTest);
 
-            std::cout << "Implementation R Squared Value: " << std::fixed << std::setprecision(2)
-                << rSquared << std::endl;
+            std::cout << "Implementation R Squared Value: " << std::fixed << 
+                std::setprecision(2) << rSquared << std::endl;
 
             break;
     }
