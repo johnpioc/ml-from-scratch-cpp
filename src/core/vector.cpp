@@ -1,4 +1,4 @@
-#include <algorithm>
+#include <numeric>
 #include <jmll/core/vector.hpp>
 #include <vector>
 
@@ -76,4 +76,8 @@ Vector Vector::operator-=(Vector& other) {
 
 Vector Vector::operator-(Vector& rhs) {
     return *this -= rhs;
+}
+
+double Vector::mean() {
+    return std::accumulate(this->data_.begin(), this->data_.end(), 0) / this->numCells;
 }

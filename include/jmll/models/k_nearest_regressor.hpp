@@ -4,6 +4,7 @@
 #include <jmll/core/lpnorm.hpp>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
+#include <jmll/core/kd_tree.hpp>
 #include <jmll/models/tuning/evaluation_metric.hpp>
 #include <jmll/models/tuning/traits.hpp>
 
@@ -30,13 +31,16 @@ public:
     KNearestRegressor(int k) : k(k) {};
 
     void fit(Matrix& x, Vector& y) {
-        std::pair<KNNStructure<DistanceEquation>, int> results = this->distanceEquation_.fit(x,y);
-        this->space_ = results.first;
-        this->numOfPredictors_ = results.second;
+        this->space_ = KDTree<DistanceEquation>(x, y);
     }
 
     Vector predict(Matrix& x) {
-        // TODO: implement internal logic in KNN Structure to return vector of predictions
+        Vector predictions(x.numRows);
+        for (int i = 0; i < x.numRows; i++) {
+            Vector kNearest = this->space_.getKNearest(x.getRow(i), this->k);
+            predictions.set(i, kNearest.mean());
+        }
+        return predictions;
     }
 
     double evaluate(Vector& yPred, Vector& yTrue) {
