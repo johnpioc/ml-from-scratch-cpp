@@ -12,6 +12,7 @@ add_executable(jmll
     src/models/tuning/fitting_policy.cpp
     src/data_preprocessing/datasets.cpp
     src/data_preprocessing/train_test_split.cpp
+    src/core/kd_tree.cpp
 )
 
 target_include_directories(jmll PUBLIC
