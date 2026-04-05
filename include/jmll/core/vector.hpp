@@ -47,6 +47,12 @@ public:
     /* Vector Subtraction */
     Vector operator-(Vector& rhs);
 
+    Vector operator+=(Vector& other);
+
+    Vector operator+(Vector& other);
+
+    Vector operator/(double scalar);
+
     /* Get mean of all values inside vector */
     double mean();
 

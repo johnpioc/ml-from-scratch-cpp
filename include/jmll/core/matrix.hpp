@@ -48,9 +48,6 @@ public:
     /* Matrix addition */
     Matrix operator+(Matrix& other);
 
-    // TODO: / operator
-    // TODO: += operator
-
     /* Returns the transposed version of this matrix */
     Matrix transpose();
 

@@ -80,6 +80,28 @@ Vector Vector::operator-(Vector& rhs) {
     return *this -= rhs;
 }
 
+Vector Vector::operator+=(Vector& other) {
+    for (int i = 0; i < this->numCells; i++) {
+        this->set(i, this->get(i) + other.get(i));
+    }
+
+    return *this;
+}
+
+Vector Vector::operator+(Vector& other) {
+    return *this += other;
+}
+
+Vector Vector::operator/(double scalar) {
+    Vector result(this->data_);
+
+    for (int i = 0; i < this->numCells; i++) {
+        result.set(i, result.get(i) / scalar);
+    }
+
+    return result;
+}
+
 double Vector::mean() {
     return std::accumulate(this->data_.begin(), this->data_.end(), 0) / this->numCells;
 }
