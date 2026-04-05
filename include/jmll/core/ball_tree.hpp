@@ -16,6 +16,10 @@ public:
     std::vector<int> dataIndices;
     std::unique_ptr<BallTreeNode> left = nullptr;
     std::unique_ptr<BallTreeNode> right = nullptr;
+
+    bool isLeafNode() {
+        return left == nullptr && right == nullptr;
+    }
 };
 
 template <DistanceEquation DistanceEquation>
@@ -31,27 +35,23 @@ private:
 
     std::unique_ptr<BallTreeNode> build(vector<int>& indices) {
         std::unique_ptr<BallTreeNode> currNode = make_unique<BallTreeNode>();
+        Matrix& currentData = this->dataPoints_.getRows(indices);
+
+        // Calculate Centroid using means
+        currNode->centroid = currentData.getRowMeans();
+
+        // Get radius using distance between centroid and furthest point in space
+        for (int i : indices) {
+            int currDistance = this->distanceEquation_.calculate(
+                currNode->centroid, this->dataPoints_.getRow(i)
+            );
+            currNode->radius = max(currNode->radius, currDistance);
+        }
         
         // If number of remaining points is low, make a leaf node and return it
         if (indices.size() <= LEAF_SIZE) {
             currNode->dataIndices = indices;
         } else {
-            // Calculate Centroid using means
-            currNode->centroid = Vector(this->numOfDimensions_);
-            for (int i = 0; i < indices.size(); i++) {
-                currNode->centroid += this->dataPoints_.getRow(indices[i]);
-            }
-
-            currNode->centroid /= indices.size();
-
-            // Get radius using distance between centroid and furthest point in space
-            for (int i = 0; i < indices.size(); i++) {
-                int currDistance = this->distanceEquation_.calculate(
-                    currNode->centroid, this->dataPoints_.getRow(i)
-                );
-                currNode->radius = max(currNode->radius, currDistance);
-            }
-
             // Find Dimension with largest spread via variance
             Vector colVariances = this->dataPoints_.getRows(indices).getColVariances();
             std::vector colVariancesData = colVariances.getData();
@@ -78,6 +78,51 @@ private:
         return currNode;
     }
 
+    void search(BallTreeNode* node, Vector& target, int k, 
+        std::priority_queue<std::pair<double, double>>& topK) {
+        if (node == nullptr) return;
+
+        if (node->isLeafNode()) {
+            for (int idx : node->dataIndices) {
+                double currentDist = 
+                    this->distanceEquation_.calculate(target, this->dataPoints_.getRow(idx));
+                if (topK.size() < k)  topK.push({ currentDist, this->labels_.get(idx) });
+                else {
+                    if (currentDist < topK.top().first) {
+                        topK.pop();
+                        topK.push({ currentDist, this->labels_.get(idx) });
+                    }
+                }
+            }
+        } else {
+            double leftDistance = node->left != nullptr
+                ? this->distanceEquation_.calculate(target, node->left->centroid)
+                : std::numeric_limits<double>::max();
+            
+            double rightDistance = node->right != nullptr
+                ? this->distanceEquation_.calculate(target, node->right->centroid)
+                : std::numeric_limits<double>::max();
+
+            double furthestDistance = topK.empty() ? std::numeric_limits<double>::max() 
+                : topK.top().first;
+
+            if (leftDistance < rightDistance) {
+                if (topK.size() < k)  search(node->left, target, k, topK);
+                else if (leftDistance < furthestDistance) search(node->left, target, k, topK);
+
+                if (topK.size() < k) search(node->right, target, k, topK);
+                else if (rightDistance < furthestDistance) search(node->right, target, k, topK);
+                
+            } else if (rightDistance < furthestDistance) {
+                if (topK.size() < k) search(node->right, target, k, topK);
+                else if (rightDistance < furthestDistance) (node->right, target, k, topK);
+
+                if (topK.size() < k) search(node->left, target, k, topK);
+                else if (leftDistance < furthestDistance) search(node->right, target, k, topK);
+            }
+        }
+    }
+
 public:
     BallTree();
 
@@ -86,6 +131,11 @@ public:
         this->size_ = dataPoints.numRows; 
         this->dataPoints_ = dataPoints;
         this->labels_ = labels;
+    }
+
+    Vector getKNearest(Vector& dataPoint, int k) {
+        // First is distance, second is label
+        std::priority_queue<std::pair<double, double>> topK;
     }
 };
 
