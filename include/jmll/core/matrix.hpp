@@ -29,6 +29,8 @@ public:
     /* Retrives the row at the given row index */
     Vector getRow(int r);
 
+    Vector getCol(int c);
+
     Matrix getRows(std::vector<int>& indices);
 
     /* Sets the value at a given row and column number */
@@ -54,6 +56,12 @@ public:
 
     /* Augments the matrix to prepend a column of 1.0s at the start */
     Matrix prependOnes();
+
+    Vector getColMeans();
+    Vector getRowMeans();
+
+    Vector getColVariances();
+    Vector getRowVariances();
 };
 
 /* Returns identity matrix of given order */

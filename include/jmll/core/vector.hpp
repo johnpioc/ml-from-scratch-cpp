@@ -49,5 +49,8 @@ public:
 
     /* Get mean of all values inside vector */
     double mean();
+
+    double median();
+    double variance();
 };
 }
