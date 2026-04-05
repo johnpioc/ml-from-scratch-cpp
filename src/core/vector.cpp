@@ -1,6 +1,8 @@
 #include <numeric>
 #include <jmll/core/vector.hpp>
 #include <vector>
+#include <algorithm>
+#include <cmath>
 
 using namespace jmll::core;
 
@@ -80,4 +82,23 @@ Vector Vector::operator-(Vector& rhs) {
 
 double Vector::mean() {
     return std::accumulate(this->data_.begin(), this->data_.end(), 0) / this->numCells;
+}
+
+double Vector::median() {
+    std::vector<double> dataCopy = this->data_;
+    auto medianIndex = dataCopy.begin() + 
+        (dataCopy.size() % 2 == 0 ? dataCopy.size() / 2 : dataCopy.size() / 2 + 1);
+
+    std::nth_element(dataCopy.begin(), medianIndex, dataCopy.end());
+    return dataCopy[medianIndex];
+}
+
+double Vector::variance() {
+    double mean = this->mean();
+    double sum = 0.0;
+    for (int i = 0; i < this->numCells; i++) {
+        sum += std::pow(this->get(i) - mean, 2.0);
+    }
+
+    return sum / (this->numCells - 1);
 }
