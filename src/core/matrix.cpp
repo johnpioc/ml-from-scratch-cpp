@@ -174,6 +174,52 @@ Matrix Matrix::prependOnes() {
     return augmented;
 }
 
+Vector Matrix::getColMeans() {
+    Vector colMeans(this->numCols);
+
+    for (int r = 0; r < this->numRows; r++) {
+        colMeans += this->getRow(r);
+    }
+
+    return colMeans / (double) this->numCols;
+}
+
+Vector Matrix::getRowMeans() {
+    Vector rowMeans(this->numRows);
+
+    for (int c = 0; c < this->numCols; c++) {
+        rowMeans += this->getCol(c);
+    }
+
+    return rowMeans / (double) this->numRows;
+}
+
+Vector Matrix::getColVariances() {
+    Vector colVariances(this->numCols);
+    Vector colMeans = this->getColMeans();
+
+    for (int r = 0; r < this->numRows; r++) {
+        for (int c = 0; c < this->numCols; c++) {
+            colVariances += std::pow(this->get(r, c) - colVariances.get(c), 2.0);
+        }
+    }
+
+    return colVariances / (double) (this->numCols - 1);
+}
+
+Vector Matrix::getRowVariances() {
+    Vector rowVariances(this->numRows);
+    Vector rowMeans = this->getRowMeans();
+
+    for (int r = 0; r < this->numRows; r++) {
+        for (int c = 0; c < this->numCols; c++) {
+                rowVariances += std::pow(this->get(r, c) - rowVariances.get(r), 2.0);
+        }
+    }
+
+    return rowVariances / (double) (this->numRows - 1);
+}
+
 // ==============================================================================================
 // MATRIX HELPERS
 // ==============================================================================================
