@@ -29,7 +29,7 @@ private:
 
     // KD Tree or Ball Tree based on number of dimensions
     std::unique_ptr<KDTree<DistanceEquation>> kdTree_ = nullptr;
-    std::unique_ptr<BallTree> ballTree_ = nullptr;
+    std::unique_ptr<BallTree<DistanceEquation>> ballTree_ = nullptr;
 
 public:
     int k;

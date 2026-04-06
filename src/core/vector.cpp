@@ -21,7 +21,7 @@ void Vector::set(int i, double val) {
     this->data_[i] = val;
 }
 
-double Vector::get(int i) {
+double Vector::get(int i) const {
     return this->data_[i];
 }
 
@@ -80,7 +80,7 @@ Vector Vector::operator-(Vector& rhs) {
     return *this -= rhs;
 }
 
-Vector Vector::operator+=(Vector& other) {
+Vector Vector::operator+=(const Vector& other) {
     for (int i = 0; i < this->numCells; i++) {
         this->set(i, this->get(i) + other.get(i));
     }
@@ -88,7 +88,7 @@ Vector Vector::operator+=(Vector& other) {
     return *this;
 }
 
-Vector Vector::operator+(Vector& other) {
+Vector Vector::operator+(const Vector& other) {
     return *this += other;
 }
 
@@ -108,10 +108,9 @@ double Vector::mean() {
 
 double Vector::median() {
     std::vector<double> dataCopy = this->data_;
-    auto medianIndex = dataCopy.begin() + 
-        (dataCopy.size() % 2 == 0 ? dataCopy.size() / 2 : dataCopy.size() / 2 + 1);
-
-    std::nth_element(dataCopy.begin(), medianIndex, dataCopy.end());
+    int medianIndex = dataCopy.size() % 2 == 0 ? dataCopy.size() / 2 : dataCopy.size() / 2 + 1;
+    auto medianIndexLoc = dataCopy.begin() + medianIndex;
+    std::nth_element(dataCopy.begin(), medianIndexLoc, dataCopy.end());
     return dataCopy[medianIndex];
 }
 

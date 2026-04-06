@@ -6,6 +6,8 @@
 
 #include <vector>
 #include <memory>
+#include <algorithm>
+#include <queue>
 
 namespace jmll::core {
 
@@ -26,15 +28,15 @@ template <DistanceEquation DistanceEquation>
 class BallTree {
 private:
     int numOfDimensions_;
-    int size_
+    int size_;
     DistanceEquation distanceEquation_;
     const int LEAF_SIZE = 30;
 
     Matrix dataPoints_;
     Vector labels_;
 
-    std::unique_ptr<BallTreeNode> build(vector<int>& indices) {
-        std::unique_ptr<BallTreeNode> currNode = make_unique<BallTreeNode>();
+    std::unique_ptr<BallTreeNode> build(std::vector<int>& indices) {
+        std::unique_ptr<BallTreeNode> currNode = std::make_unique<BallTreeNode>();
         Matrix& currentData = this->dataPoints_.getRows(indices);
 
         // Calculate Centroid using means
@@ -42,10 +44,10 @@ private:
 
         // Get radius using distance between centroid and furthest point in space
         for (int i : indices) {
-            int currDistance = this->distanceEquation_.calculate(
+            double currDistance = this->distanceEquation_.calculate(
                 currNode->centroid, this->dataPoints_.getRow(i)
             );
-            currNode->radius = max(currNode->radius, currDistance);
+            currNode->radius = std::max(currNode->radius, currDistance);
         }
         
         // If number of remaining points is low, make a leaf node and return it
@@ -115,7 +117,7 @@ private:
                 
             } else if (rightDistance < furthestDistance) {
                 if (topK.size() < k) search(node->right, target, k, topK);
-                else if (rightDistance < furthestDistance) (node->right, target, k, topK);
+                else if (rightDistance < furthestDistance) search(node->right, target, k, topK);
 
                 if (topK.size() < k) search(node->left, target, k, topK);
                 else if (leftDistance < furthestDistance) search(node->right, target, k, topK);

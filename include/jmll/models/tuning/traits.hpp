@@ -16,6 +16,9 @@ template <typename T>
 inline constexpr bool forKNearestNeighbours = false;
 
 template<core::DistanceEquation DistanceEquation>
-using KNNStructure = std::variant<core::KDTree<DistanceEquation>, core::BallTree>;
+using KNNStructure = std::variant<
+    core::KDTree<DistanceEquation>, 
+    core::BallTree<DistanceEquation>
+>;
 
 }

@@ -26,7 +26,7 @@ public:
     void set(int i, double val);
 
     /* Retrives a value at a given position in the vector */
-    double get(int i);
+    double get(int i) const;
 
     std::vector<double> getData();
 
@@ -47,9 +47,9 @@ public:
     /* Vector Subtraction */
     Vector operator-(Vector& rhs);
 
-    Vector operator+=(Vector& other);
+    Vector operator+=(const Vector& other);
 
-    Vector operator+(Vector& other);
+    Vector operator+(const Vector& other);
 
     Vector operator/(double scalar);
 
