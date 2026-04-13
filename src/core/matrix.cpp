@@ -30,6 +30,14 @@ Vector Matrix::getRow(int r) {
     return Vector(this->data_[r]);
 }
 
+Vector Matrix::getCol(int c) {
+    std::vector<double> colData(this->numRows);
+    for (int i = 0; i < this->numRows; i++) {
+        colData[i] = this->get(i, c);
+    }
+    return Vector(colData);
+}
+
 Matrix Matrix::getRows(std::vector<int>& indices) {
     std::vector<std::vector<double>> rows;
 

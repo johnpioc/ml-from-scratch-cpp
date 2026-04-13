@@ -4,9 +4,9 @@ include(FetchContent)
 # GOOGLE TEST
 # =================================================================================================
 FetchContent_Declare(
-  googletest
-  GIT_REPOSITORY https://github.com/google/googletest.git
-  GIT_TAG v1.15.2
+    googletest
+    GIT_REPOSITORY https://github.com/google/googletest.git
+    GIT_TAG        v1.15.2
 )
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
@@ -25,9 +25,14 @@ FetchContent_MakeAvailable(eigen)
 set(BUILD_TESTING ON CACHE BOOL "" FORCE)
 
 include(GoogleTest)
-add_executable((matrix_test core/matrix_test.cpp)
+
+# =================================================================================================
+# Test binaries
+# =================================================================================================
+add_executable(matrix_test core/matrix_test.cpp)
 target_link_libraries(matrix_test PRIVATE
-  jmll::jmll
-  GTest::gtest_main
-  Eigen3::Eigen
+    jmll::jmll
+    GTest::gtest_main
+    Eigen3::Eigen
 )
+add_test(NAME matrix_test COMMAND matrix_test)
