@@ -1,0 +1,19 @@
+name: Format
+
+on:
+  pull_request:
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format-18
+        run: sudo apt-get update && sudo apt-get install -y clang-format-18
+
+      - name: Check formatting
+        run: |
+          git ls-files include src tests \
+            | grep -E '\.(cpp|hpp|h|cc|tpp)$' \
+            | xargs clang-format-18 --dry-run --Werror
