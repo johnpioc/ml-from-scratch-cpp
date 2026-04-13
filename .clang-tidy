@@ -1,0 +1,11 @@
+---
+Checks: >
+  -*,
+  google-*,
+  modernize-*,
+  performance-*,
+  -modernize-use-trailing-return-type
+
+HeaderFilterRegex: '.*include/jmll/.*'
+
+WarningsAsErrors: ''
