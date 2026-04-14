@@ -29,9 +29,9 @@ class Vector {
     /* Retrives a value at a given position in the vector */
     double get(int i);
 
-    std::vector<double> getData();
+    [[nodiscard]] std::vector<double> getData();
 
-    std::vector<double> getDataByIndices(std::vector<int> indices);
+    [[nodiscard]] std::vector<double> getDataByIndices(std::vector<int> indices);
 
     /* Col Vector <=> Row Vector */
     void transpose();
@@ -40,12 +40,12 @@ class Vector {
     double operator*(const Vector& other);
 
     /* Scalar Multiplication */
-    Vector operator*(double scalar);
+    [[nodiscard]] Vector operator*(double scalar);
 
     /* Vector Subtraction by Assignmnent */
-    Vector operator-=(const Vector& other);
+    [[nodiscard]] Vector operator-=(const Vector& other);
 
     /* Vector Subtraction */
-    Vector operator-(const Vector& rhs);
+    [[nodiscard]] Vector operator-(const Vector& rhs);
 };
 }  // namespace jmll::core
