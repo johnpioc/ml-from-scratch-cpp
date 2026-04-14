@@ -20,40 +20,40 @@ class Matrix {
     /* Initialises a matrix using a given two-dimensional vector */
     explicit Matrix(std::vector<std::vector<double>> data);
 
-    size_t getNumRows() noexcept;
-    size_t getNumCols() noexcept;
+    [[nodiscard]] size_t getNumRows() const noexcept;
+    [[nodiscard]] size_t getNumCols() const noexcept;
 
     /* Retrives the value stored at a given row and column number */
-    double get(int r, int c);
+    [[nodiscard]] double get(int r, int c) const;
 
     /* Retrives the row at the given row index */
-    [[nodiscard]] Vector getRow(int r);
+    [[nodiscard]] Vector getRow(int r) const;
 
-    [[nodiscard]] Matrix getRows(const std::vector<int>& indices);
+    [[nodiscard]] Matrix getRows(const std::vector<int>& indices) const;
 
     /* Sets the value at a given row and column number */
     void set(int r, int c, double val);
 
     /* Matrix multiplication operator overload */
-    [[nodiscard]] Matrix operator*(const Matrix& other);
+    [[nodiscard]] Matrix operator*(const Matrix& other) const;
 
     /* Matrix multiplication with vector operator overload */
-    [[nodiscard]] Vector operator*(const Vector& vec);
+    [[nodiscard]] Vector operator*(const Vector& vec) const;
 
     /* Matrix Scalar Multiplication */
-    [[nodiscard]] Matrix operator*(double scalar);
+    [[nodiscard]] Matrix operator*(double scalar) const;
 
     /* Matrix addition */
-    [[nodiscard]] Matrix operator+(const Matrix& other);
+    [[nodiscard]] Matrix operator+(const Matrix& other) const;
 
     /* Returns the transposed version of this matrix */
-    [[nodiscard]] Matrix transpose();
+    [[nodiscard]] Matrix transpose() const;
 
     /* Returns the inverse of this matrix */
-    [[nodiscard]] Matrix inverse();
+    [[nodiscard]] Matrix inverse() const;
 
     /* Augments the matrix to prepend a column of 1.0s at the start */
-    [[nodiscard]] Matrix prependOnes() noexcept;
+    [[nodiscard]] Matrix prependOnes() const noexcept;
 };
 
 /* Returns identity matrix of given order */

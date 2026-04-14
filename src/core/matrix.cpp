@@ -18,14 +18,14 @@ Matrix::Matrix(std::vector<std::vector<double>> data) {
     this->data_ = std::move(data);
 }
 
-size_t Matrix::getNumRows() noexcept { return this->numRows_; }
-size_t Matrix::getNumCols() noexcept { return this->numCols_; }
+size_t Matrix::getNumRows() const noexcept { return this->numRows_; }
+size_t Matrix::getNumCols() const noexcept { return this->numCols_; }
 
-double Matrix::get(int r, int c) { return this->data_[r][c]; }
+double Matrix::get(int r, int c) const { return this->data_[r][c]; }
 
-Vector Matrix::getRow(int r) { return Vector(this->data_[r]); }
+Vector Matrix::getRow(int r) const { return Vector(this->data_[r]); }
 
-Matrix Matrix::getRows(const std::vector<int>& indices) {
+Matrix Matrix::getRows(const std::vector<int>& indices) const {
     std::vector<std::vector<double>> rows;
 
     for (int index : indices) {
@@ -37,7 +37,7 @@ Matrix Matrix::getRows(const std::vector<int>& indices) {
 
 void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 
-Matrix Matrix::operator*(const Matrix& other) {
+Matrix Matrix::operator*(const Matrix& other) const {
     // TODO: throw exception if this number of cols does not equal other's num of rows
 
     Matrix res(this->numRows_, other.getNumCols());
@@ -55,8 +55,8 @@ Matrix Matrix::operator*(const Matrix& other) {
     return res;
 }
 
-Vector Matrix::operator*(const Vector& vec) {
-    int common = vec.isColVector ? vec.numCells : 1;
+Vector Matrix::operator*(const Vector& vec) const {
+    int common = vec.isColVector() ? vec.getNumCells() : 1;
     // TODO: throw exception if the number of cols in matrix doesn't equal commmon
 
     Vector res(this->numRows_);
@@ -71,7 +71,7 @@ Vector Matrix::operator*(const Vector& vec) {
     return res;
 }
 
-Matrix Matrix::operator*(double scalar) {
+Matrix Matrix::operator*(double scalar) const {
     Matrix res(this->data_);
 
     for (int r = 0; r < res.getNumRows(); r++) {
@@ -83,7 +83,7 @@ Matrix Matrix::operator*(double scalar) {
     return res;
 }
 
-Matrix Matrix::operator+(const Matrix& other) {
+Matrix Matrix::operator+(const Matrix& other) const {
     // TODO: ensure both matrices are the same shape
     Matrix res(this->data_);
 
@@ -96,7 +96,7 @@ Matrix Matrix::operator+(const Matrix& other) {
     return res;
 }
 
-Matrix Matrix::transpose() {
+Matrix Matrix::transpose() const {
     Matrix res(this->numCols_, this->numRows_);
 
     for (int r = 0; r < this->numRows_; r++) {
@@ -110,7 +110,7 @@ Matrix Matrix::transpose() {
 
 // Source: https://www.geeksforgeeks.org/computer-science-fundamentals/
 // finding-inverse-of-a-matrix-using-gauss-jordan-method/
-Matrix Matrix::inverse() {
+Matrix Matrix::inverse() const {
     int order = this->numRows_;
 
     Matrix aug(order, 2 * order);
@@ -155,7 +155,7 @@ Matrix Matrix::inverse() {
     return inv;
 }
 
-Matrix Matrix::prependOnes() noexcept {
+Matrix Matrix::prependOnes() const noexcept {
     Matrix augmented(this->numRows_, this->numCols_ + 1);
 
     for (int r = 0; r < augmented.getNumRows(); r++) {
