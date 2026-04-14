@@ -7,16 +7,19 @@ using namespace jmll::core;
 // ==============================================================================================
 // MATRIX METHODS
 // ==============================================================================================
-Matrix::Matrix(int numRows, int numCols) : numRows(numRows), numCols(numCols) {
+Matrix::Matrix(int numRows, int numCols) : numRows_(numRows), numCols_(numCols) {
     this->data_ =
-        std::vector<std::vector<double>>(this->numRows, std::vector<double>(this->numCols, 0.0));
+        std::vector<std::vector<double>>(this->numRows_, std::vector<double>(this->numCols_, 0.0));
 }
 
 Matrix::Matrix(std::vector<std::vector<double>> data) {
-    this->numRows = data.size();
-    this->numCols = data.front().size();
+    this->numRows_ = data.size();
+    this->numCols_ = data.front().size();
     this->data_ = std::move(data);
 }
+
+size_t Matrix::getNumRows() noexcept { return this->numRows_; }
+size_t Matrix::getNumCols() noexcept { return this->numCols_; }
 
 double Matrix::get(int r, int c) { return this->data_[r][c]; }
 
@@ -37,12 +40,12 @@ void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 Matrix Matrix::operator*(const Matrix& other) {
     // TODO: throw exception if this number of cols does not equal other's num of rows
 
-    Matrix res(this->numRows, other.numCols);
+    Matrix res(this->numRows_, other.getNumCols());
 
-    for (int ra = 0; ra < this->numRows; ra++) {
-        for (int cb = 0; cb < other.numCols; cb++) {
+    for (int ra = 0; ra < this->numRows_; ra++) {
+        for (int cb = 0; cb < other.getNumCols(); cb++) {
             double val = 0;
-            for (int i = 0; i < this->numCols; i++) {
+            for (int i = 0; i < this->numCols_; i++) {
                 val += this->get(ra, i) * other.get(i, cb);
             }
             res.set(ra, cb, val);
@@ -56,8 +59,8 @@ Vector Matrix::operator*(const Vector& vec) {
     int common = vec.isColVector ? vec.numCells : 1;
     // TODO: throw exception if the number of cols in matrix doesn't equal commmon
 
-    Vector res(this->numRows);
-    for (int ra = 0; ra < this->numRows; ra++) {
+    Vector res(this->numRows_);
+    for (int ra = 0; ra < this->numRows_; ra++) {
         double val = 0;
         for (int i = 0; i < common; i++) {
             val += this->get(ra, i) * vec.get(i);
@@ -71,8 +74,8 @@ Vector Matrix::operator*(const Vector& vec) {
 Matrix Matrix::operator*(double scalar) {
     Matrix res(this->data_);
 
-    for (int r = 0; r < res.numRows; r++) {
-        for (int c = 0; c < res.numCols; c++) {
+    for (int r = 0; r < res.getNumRows(); r++) {
+        for (int c = 0; c < res.getNumCols(); c++) {
             res.set(r, c, res.get(r, c) * scalar);
         }
     }
@@ -84,8 +87,8 @@ Matrix Matrix::operator+(const Matrix& other) {
     // TODO: ensure both matrices are the same shape
     Matrix res(this->data_);
 
-    for (int r = 0; r < res.numRows; r++) {
-        for (int c = 0; c < res.numCols; c++) {
+    for (int r = 0; r < res.getNumRows(); r++) {
+        for (int c = 0; c < res.getNumCols(); c++) {
             res.set(r, c, this->get(r, c) + other.get(r, c));
         }
     }
@@ -94,10 +97,10 @@ Matrix Matrix::operator+(const Matrix& other) {
 }
 
 Matrix Matrix::transpose() {
-    Matrix res(this->numCols, this->numRows);
+    Matrix res(this->numCols_, this->numRows_);
 
-    for (int r = 0; r < this->numRows; r++) {
-        for (int c = 0; c < this->numCols; c++) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
             res.set(c, r, this->get(r, c));
         }
     }
@@ -108,7 +111,7 @@ Matrix Matrix::transpose() {
 // Source: https://www.geeksforgeeks.org/computer-science-fundamentals/
 // finding-inverse-of-a-matrix-using-gauss-jordan-method/
 Matrix Matrix::inverse() {
-    int order = this->numRows;
+    int order = this->numRows_;
 
     Matrix aug(order, 2 * order);
 
@@ -153,10 +156,10 @@ Matrix Matrix::inverse() {
 }
 
 Matrix Matrix::prependOnes() noexcept {
-    Matrix augmented(this->numRows, this->numCols + 1);
+    Matrix augmented(this->numRows_, this->numCols_ + 1);
 
-    for (int r = 0; r < augmented.numRows; r++) {
-        for (int c = 0; c < augmented.numCols; c++) {
+    for (int r = 0; r < augmented.getNumRows(); r++) {
+        for (int c = 0; c < augmented.getNumCols(); c++) {
             augmented.set(r, c, c == 0 ? 1.0 : this->get(r, c - 1));
         }
     }

@@ -1,18 +1,20 @@
-#include <algorithm>
 #include <jmll/core/vector.hpp>
 #include <vector>
 
 using namespace jmll::core;
 
-Vector::Vector(int numCells) : numCells(numCells) {
-    this->numCells = numCells;
-    this->data_ = std::vector<double>(this->numCells, 0.0);
+Vector::Vector(int numCells) : numCells_(numCells) {
+    this->numCells_ = numCells;
+    this->data_ = std::vector<double>(this->numCells_, 0.0);
 }
 
 Vector::Vector(std::vector<double> data) {
-    this->numCells = data.size();
+    this->numCells_ = data.size();
     this->data_ = std::move(data);
 }
+
+size_t Vector::getNumCells() noexcept { return this->numCells_; }
+bool Vector::isColVector() noexcept { return this->isColVector_; }
 
 void Vector::set(int i, double val) { this->data_[i] = val; }
 
@@ -30,7 +32,7 @@ std::vector<double> Vector::getDataByIndices(const std::vector<int> indices) {
     return result;
 }
 
-void Vector::transpose() { this->isColVector = !this->isColVector; }
+void Vector::transpose() { this->isColVector_ = !this->isColVector_; }
 
 double Vector::operator*(const Vector& other) {
     // TODO: check that this vector is a column vector and other is a row vector
@@ -40,7 +42,7 @@ double Vector::operator*(const Vector& other) {
 
     double dotProduct = 0.0;
 
-    for (int i = 0; i < this->numCells; i++) {
+    for (int i = 0; i < this->numCells_; i++) {
         dotProduct += this->get(i) * other.get(i);
     }
 
@@ -50,7 +52,7 @@ double Vector::operator*(const Vector& other) {
 Vector Vector::operator*(double scalar) {
     Vector result(this->data_);
 
-    for (int i = 0; i < result.numCells; i++) {
+    for (int i = 0; i < result.getNumCells(); i++) {
         result.set(i, result.get(i) * scalar);
     }
 
@@ -61,7 +63,7 @@ Vector Vector::operator-=(const Vector& other) {
     // TODO: dimension check
     // TODO: check both are col vectors or both are row vectors
 
-    for (int i = 0; i < this->numCells; i++) {
+    for (int i = 0; i < this->numCells_; i++) {
         this->set(i, this->get(i) - other.get(i));
     }
 
