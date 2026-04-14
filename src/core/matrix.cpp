@@ -7,28 +7,20 @@ using namespace jmll::core;
 // ==============================================================================================
 // MATRIX METHODS
 // ==============================================================================================
-Matrix::Matrix(int numRows, int numCols): 
-    numRows(numRows),
-    numCols(numCols) {
-    this->data_ = std::vector<std::vector<double>>(
-        this->numRows, 
-        std::vector<double>(this->numCols, 0.0)
-    );
+Matrix::Matrix(int numRows, int numCols) : numRows(numRows), numCols(numCols) {
+    this->data_ =
+        std::vector<std::vector<double>>(this->numRows, std::vector<double>(this->numCols, 0.0));
 }
 
 Matrix::Matrix(std::vector<std::vector<double>>& data) {
     this->numRows = data.size();
     this->numCols = data.front().size();
-    this->data_ = data;
+    this->data_ = std::move(data);
 }
 
-double Matrix::get(int r, int c) {
-    return this->data_[r][c];
-}
+double Matrix::get(int r, int c) { return this->data_[r][c]; }
 
-Vector Matrix::getRow(int r) {
-    return Vector(this->data_[r]);
-}
+Vector Matrix::getRow(int r) { return Vector(this->data_[r]); }
 
 Matrix Matrix::getRows(std::vector<int>& indices) {
     std::vector<std::vector<double>> rows;
@@ -40,13 +32,11 @@ Matrix Matrix::getRows(std::vector<int>& indices) {
     return Matrix(rows);
 }
 
-void Matrix::set(int r, int c, double val) {
-    this->data_[r][c] = val;
-}
+void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 
 Matrix Matrix::operator*(Matrix& other) {
     // TODO: throw exception if this number of cols does not equal other's num of rows
-    
+
     Matrix res(this->numRows, other.numCols);
 
     for (int ra = 0; ra < this->numRows; ra++) {
@@ -65,12 +55,12 @@ Matrix Matrix::operator*(Matrix& other) {
 Vector Matrix::operator*(Vector& vec) {
     int common = vec.isColVector ? vec.numCells : 1;
     // TODO: throw exception if the number of cols in matrix doesn't equal commmon
-    
+
     Vector res(this->numRows);
     for (int ra = 0; ra < this->numRows; ra++) {
         double val = 0;
         for (int i = 0; i < common; i++) {
-            val += this->get(ra, i) * vec.get(i); 
+            val += this->get(ra, i) * vec.get(i);
         }
         res.set(ra, val);
     }
@@ -83,7 +73,7 @@ Matrix Matrix::operator*(double scalar) {
 
     for (int r = 0; r < res.numRows; r++) {
         for (int c = 0; c < res.numCols; c++) {
-            res.set(r, c, res.get(r,c) * scalar);
+            res.set(r, c, res.get(r, c) * scalar);
         }
     }
 
@@ -96,7 +86,7 @@ Matrix Matrix::operator+(Matrix& other) {
 
     for (int r = 0; r < res.numRows; r++) {
         for (int c = 0; c < res.numCols; c++) {
-            res.set(r,c, this->get(r,c) + other.get(r,c));
+            res.set(r, c, this->get(r, c) + other.get(r, c));
         }
     }
 
@@ -119,7 +109,7 @@ Matrix Matrix::transpose() {
 // finding-inverse-of-a-matrix-using-gauss-jordan-method/
 Matrix Matrix::inverse() {
     int order = this->numRows;
-    
+
     Matrix aug(order, 2 * order);
 
     for (int i = 0; i < order; i++) {
@@ -186,4 +176,3 @@ Matrix jmll::core::identity(int order) {
 
     return res;
 }
-
