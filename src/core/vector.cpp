@@ -13,16 +13,16 @@ Vector::Vector(std::vector<double> data) {
     this->data_ = std::move(data);
 }
 
-size_t Vector::getNumCells() noexcept { return this->numCells_; }
-bool Vector::isColVector() noexcept { return this->isColVector_; }
+size_t Vector::getNumCells() const noexcept { return this->numCells_; }
+bool Vector::isColVector() const noexcept { return this->isColVector_; }
 
 void Vector::set(int i, double val) { this->data_[i] = val; }
 
-double Vector::get(int i) { return this->data_[i]; }
+double Vector::get(int i) const { return this->data_[i]; }
 
-std::vector<double> Vector::getData() { return this->data_; }
+std::vector<double> Vector::getData() const { return this->data_; }
 
-std::vector<double> Vector::getDataByIndices(const std::vector<int> indices) {
+std::vector<double> Vector::getDataByIndices(const std::vector<int>& indices) const {
     std::vector<double> result;
 
     for (int index : indices) {
@@ -34,7 +34,7 @@ std::vector<double> Vector::getDataByIndices(const std::vector<int> indices) {
 
 void Vector::transpose() { this->isColVector_ = !this->isColVector_; }
 
-double Vector::operator*(const Vector& other) {
+double Vector::operator*(const Vector& other) const {
     // TODO: check that this vector is a column vector and other is a row vector
     /* TODO: check that the number of cols this vector has equals the number of rows other vector
      * has
@@ -49,7 +49,7 @@ double Vector::operator*(const Vector& other) {
     return dotProduct;
 }
 
-Vector Vector::operator*(double scalar) {
+Vector Vector::operator*(double scalar) const {
     Vector result(this->data_);
 
     for (int i = 0; i < result.getNumCells(); i++) {

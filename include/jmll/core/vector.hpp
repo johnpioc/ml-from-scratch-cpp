@@ -20,27 +20,27 @@ class Vector {
     /* Uses a given vector of doubles to initialise a Vector */
     explicit Vector(std::vector<double> data);
 
-    size_t getNumCells() noexcept;
-    bool isColVector() noexcept;
+    [[nodiscard]] size_t getNumCells() const noexcept;
+    [[nodiscard]] bool isColVector() const noexcept;
 
     /* Sets a given value at a given position in the vector */
     void set(int i, double val);
 
     /* Retrives a value at a given position in the vector */
-    double get(int i);
+    [[nodiscard]] double get(int i) const;
 
-    [[nodiscard]] std::vector<double> getData();
+    [[nodiscard]] std::vector<double> getData() const;
 
-    [[nodiscard]] std::vector<double> getDataByIndices(std::vector<int> indices);
+    [[nodiscard]] std::vector<double> getDataByIndices(const std::vector<int>& indices) const;
 
     /* Col Vector <=> Row Vector */
     void transpose();
 
     /* Dot Product */
-    double operator*(const Vector& other);
+    [[nodiscard]] double operator*(const Vector& other) const;
 
     /* Scalar Multiplication */
-    [[nodiscard]] Vector operator*(double scalar);
+    [[nodiscard]] Vector operator*(double scalar) const;
 
     /* Vector Subtraction by Assignmnent */
     [[nodiscard]] Vector operator-=(const Vector& other);
