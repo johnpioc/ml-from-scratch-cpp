@@ -4,51 +4,45 @@
 
 using namespace jmll::core;
 
-Vector::Vector(int numCells):
-    numCells(numCells) {
+Vector::Vector(int numCells) : numCells(numCells) {
     this->numCells = numCells;
     this->data_ = std::vector<double>(this->numCells, 0.0);
 }
 
 Vector::Vector(std::vector<double> data) {
     this->numCells = data.size();
-    this->data_ = data;
+    this->data_ = std::move(data);
 }
 
-void Vector::set(int i, double val) {
-    this->data_[i] = val;
-}
+void Vector::set(int i, double val) { this->data_[i] = val; }
 
-double Vector::get(int i) {
-    return this->data_[i];
-}
+double Vector::get(int i) { return this->data_[i]; }
 
 std::vector<double> Vector::getData() { return this->data_; }
 
-std::vector<double> Vector::getDataByIndices(std::vector<int> indices) {
+std::vector<double> Vector::getDataByIndices(const std::vector<int> indices) {
     std::vector<double> result;
 
-    for (int index : indices) { result.push_back(this->get(index)); }
+    for (int index : indices) {
+        result.push_back(this->get(index));
+    }
 
     return result;
 }
 
-void Vector::transpose() {
-    this->isColVector = !this->isColVector;
-}
+void Vector::transpose() { this->isColVector = !this->isColVector; }
 
-double Vector::operator*(Vector& other) {
+double Vector::operator*(const Vector& other) {
     // TODO: check that this vector is a column vector and other is a row vector
     /* TODO: check that the number of cols this vector has equals the number of rows other vector
-    * has
-    */
+     * has
+     */
 
     double dotProduct = 0.0;
 
     for (int i = 0; i < this->numCells; i++) {
         dotProduct += this->get(i) * other.get(i);
     }
-
 
     return dotProduct;
 }
@@ -63,7 +57,7 @@ Vector Vector::operator*(double scalar) {
     return result;
 }
 
-Vector Vector::operator-=(Vector& other) {
+Vector Vector::operator-=(const Vector& other) {
     // TODO: dimension check
     // TODO: check both are col vectors or both are row vectors
 
@@ -74,6 +68,4 @@ Vector Vector::operator-=(Vector& other) {
     return *this;
 }
 
-Vector Vector::operator-(Vector& rhs) {
-    return *this -= rhs;
-}
+Vector Vector::operator-(const Vector& rhs) { return *this -= rhs; }
