@@ -12,7 +12,7 @@ Matrix::Matrix(int numRows, int numCols) : numRows(numRows), numCols(numCols) {
         std::vector<std::vector<double>>(this->numRows, std::vector<double>(this->numCols, 0.0));
 }
 
-Matrix::Matrix(std::vector<std::vector<double>>& data) {
+Matrix::Matrix(std::vector<std::vector<double>> data) {
     this->numRows = data.size();
     this->numCols = data.front().size();
     this->data_ = std::move(data);
@@ -22,7 +22,7 @@ double Matrix::get(int r, int c) { return this->data_[r][c]; }
 
 Vector Matrix::getRow(int r) { return Vector(this->data_[r]); }
 
-Matrix Matrix::getRows(std::vector<int>& indices) {
+Matrix Matrix::getRows(const std::vector<int>& indices) {
     std::vector<std::vector<double>> rows;
 
     for (int index : indices) {
@@ -34,7 +34,7 @@ Matrix Matrix::getRows(std::vector<int>& indices) {
 
 void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 
-Matrix Matrix::operator*(Matrix& other) {
+Matrix Matrix::operator*(const Matrix& other) {
     // TODO: throw exception if this number of cols does not equal other's num of rows
 
     Matrix res(this->numRows, other.numCols);
@@ -52,7 +52,7 @@ Matrix Matrix::operator*(Matrix& other) {
     return res;
 }
 
-Vector Matrix::operator*(Vector& vec) {
+Vector Matrix::operator*(const Vector& vec) {
     int common = vec.isColVector ? vec.numCells : 1;
     // TODO: throw exception if the number of cols in matrix doesn't equal commmon
 
@@ -80,7 +80,7 @@ Matrix Matrix::operator*(double scalar) {
     return res;
 }
 
-Matrix Matrix::operator+(Matrix& other) {
+Matrix Matrix::operator+(const Matrix& other) {
     // TODO: ensure both matrices are the same shape
     Matrix res(this->data_);
 
@@ -152,7 +152,7 @@ Matrix Matrix::inverse() {
     return inv;
 }
 
-Matrix Matrix::prependOnes() {
+Matrix Matrix::prependOnes() noexcept {
     Matrix augmented(this->numRows, this->numCols + 1);
 
     for (int r = 0; r < augmented.numRows; r++) {
