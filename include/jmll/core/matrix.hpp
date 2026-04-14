@@ -18,7 +18,7 @@ class Matrix {
     Matrix(int numRows, int numCols);
 
     /* Initialises a matrix using a given two-dimensional vector */
-    Matrix(std::vector<std::vector<double>> data);
+    explicit Matrix(std::vector<std::vector<double>> data);
 
     size_t getNumRows() noexcept;
     size_t getNumCols() noexcept;

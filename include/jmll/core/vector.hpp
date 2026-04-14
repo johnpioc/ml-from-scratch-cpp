@@ -15,10 +15,10 @@ class Vector {
 
    public:
     /* Initialises a vector with a given number of cells to 0.0 */
-    Vector(int numCells);
+    explicit Vector(int numCells);
 
     /* Uses a given vector of doubles to initialise a Vector */
-    Vector(std::vector<double> data);
+    explicit Vector(std::vector<double> data);
 
     size_t getNumCells() noexcept;
     bool isColVector() noexcept;
