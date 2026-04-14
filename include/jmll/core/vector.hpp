@@ -5,11 +5,11 @@
 namespace jmll::core {
 
 class Vector {
-private:
+   private:
     /* The underlying data inside the vector */
     std::vector<double> data_;
 
-public:
+   public:
     /* Flag to represent if this is a column or row vector */
     bool isColVector = true;
 
@@ -36,15 +36,15 @@ public:
     void transpose();
 
     /* Dot Product */
-    double operator*(Vector& other);
+    double operator*(const Vector& other);
 
     /* Scalar Multiplication */
     Vector operator*(double scalar);
 
     /* Vector Subtraction by Assignmnent */
-    Vector operator-=(Vector& other);
+    Vector operator-=(const Vector& other);
 
     /* Vector Subtraction */
-    Vector operator-(Vector& rhs);
+    Vector operator-(const Vector& rhs);
 };
-}
+}  // namespace jmll::core

@@ -6,11 +6,11 @@
 namespace jmll::core {
 
 class Matrix {
-private:
+   private:
     /* The underlying data inside the matrix */
     std::vector<std::vector<double>> data_;
 
-public:
+   public:
     /* The number of rows in the matrix */
     int numRows;
 
@@ -21,7 +21,7 @@ public:
     Matrix(int numRows, int numCols);
 
     /* Initialises a matrix using a given two-dimensional vector */
-    Matrix(std::vector<std::vector<double>>& data);
+    Matrix(std::vector<std::vector<double>> data);
 
     /* Retrives the value stored at a given row and column number */
     double get(int r, int c);
@@ -29,22 +29,22 @@ public:
     /* Retrives the row at the given row index */
     Vector getRow(int r);
 
-    Matrix getRows(std::vector<int>& indices);
+    Matrix getRows(const std::vector<int>& indices);
 
     /* Sets the value at a given row and column number */
     void set(int r, int c, double val);
 
     /* Matrix multiplication operator overload */
-    Matrix operator*(Matrix& other);
+    Matrix operator*(const Matrix& other);
 
     /* Matrix multiplication with vector operator overload */
-    Vector operator*(Vector& vec);
+    Vector operator*(const Vector& vec);
 
     /* Matrix Scalar Multiplication */
     Matrix operator*(double scalar);
 
     /* Matrix addition */
-    Matrix operator+(Matrix& other);
+    Matrix operator+(const Matrix& other);
 
     /* Returns the transposed version of this matrix */
     Matrix transpose();
@@ -53,10 +53,10 @@ public:
     Matrix inverse();
 
     /* Augments the matrix to prepend a column of 1.0s at the start */
-    Matrix prependOnes();
+    Matrix prependOnes() noexcept;
 };
 
 /* Returns identity matrix of given order */
 Matrix identity(int order);
 
-}
+}  // namespace jmll::core
