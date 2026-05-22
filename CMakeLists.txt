@@ -4,7 +4,7 @@ project(jmll)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 file(GLOB_RECURSE JMLL_SOURCES CONFIGURE_DEPENDS
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp
 )
 
 add_library(jmll STATIC ${JMLL_SOURCES})

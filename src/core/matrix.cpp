@@ -37,64 +37,64 @@ Matrix Matrix::getRows(const std::vector<int>& indices) const {
 
 void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 
-Matrix Matrix::operator*(const Matrix& other) const {
-    // TODO: throw exception if this number of cols does not equal other's num of rows
-
-    Matrix res(this->numRows_, other.getNumCols());
-
-    for (int ra = 0; ra < this->numRows_; ra++) {
-        for (int cb = 0; cb < other.getNumCols(); cb++) {
-            double val = 0;
-            for (int i = 0; i < this->numCols_; i++) {
-                val += this->get(ra, i) * other.get(i, cb);
-            }
-            res.set(ra, cb, val);
+Matrix& Matrix::operator+=(const Matrix& rhs) {
+    // TODO: check both matrices are same shape
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) + rhs.get(r, c));
         }
     }
 
-    return res;
+    return *this;
 }
 
-Vector Matrix::operator*(const Vector& vec) const {
-    int common = vec.isColVector() ? vec.getNumCells() : 1;
-    // TODO: throw exception if the number of cols in matrix doesn't equal commmon
-
-    Vector res(this->numRows_);
-    for (int ra = 0; ra < this->numRows_; ra++) {
-        double val = 0;
-        for (int i = 0; i < common; i++) {
-            val += this->get(ra, i) * vec.get(i);
-        }
-        res.set(ra, val);
-    }
-
-    return res;
-}
-
-Matrix Matrix::operator*(double scalar) const {
-    Matrix res(this->data_);
-
-    for (int r = 0; r < res.getNumRows(); r++) {
-        for (int c = 0; c < res.getNumCols(); c++) {
-            res.set(r, c, res.get(r, c) * scalar);
+Matrix& Matrix::operator+=(double rhs) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) + rhs);
         }
     }
 
-    return res;
+    return *this;
 }
 
-Matrix Matrix::operator+(const Matrix& other) const {
-    // TODO: ensure both matrices are the same shape
-    Matrix res(this->data_);
-
-    for (int r = 0; r < res.getNumRows(); r++) {
-        for (int c = 0; c < res.getNumCols(); c++) {
-            res.set(r, c, this->get(r, c) + other.get(r, c));
+Matrix& Matrix::operator-=(const Matrix& rhs) {
+    // TODO: check both matrices are same shape
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) - rhs.get(r, c));
         }
     }
 
-    return res;
+    return *this;
 }
+
+Matrix& Matrix::operator-=(double rhs) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) - rhs);
+        }
+    }
+
+    return *this;
+}
+
+Matrix& Matrix::operator*=(const Matrix& rhs) {
+    *this = *this * rhs;
+    return *this;
+}
+
+Matrix& Matrix::operator*=(double rhs) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) * rhs);
+        }
+    }
+
+    return *this;
+}
+
+Matrix& Matrix::operator/=(double rhs) { return *this *= (1.0 / rhs); }
 
 Matrix Matrix::transpose() const {
     Matrix res(this->numCols_, this->numRows_);
@@ -167,6 +167,52 @@ Matrix Matrix::prependOnes() const noexcept {
     return augmented;
 }
 
+Vector Matrix::getColMeans() const {
+    Vector colMeans(this->numCols_);
+
+    for (int r = 0; r < this->numRows_; r++) {
+        colMeans += this->getRow(r);
+    }
+
+    return colMeans / static_cast<double>(this->numRows_);
+}
+
+Vector Matrix::getRowMeans() const {
+    Vector rowMeans(this->numRows_);
+    rowMeans.transpose();
+
+    for (int c = 0; c < this->numCols_; c++) {
+        rowMeans += this->getCol(c);
+    }
+
+    return rowMeans / static_cast<double>(this->numCols_);
+}
+
+Vector Matrix::getColVariances() const {
+    Vector colVariances(this->numCols_);
+    Vector colMeans = this->getColMeans();
+
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            colVariances += std::pow(this->get(r, c) - colVariances.get(c), 2.0);
+        }
+    }
+
+    return colVariances / static_cast<double>(this->numCols_ - 1);
+}
+
+Vector Matrix::getRowVariances() const {
+    Vector rowVariances(this->numRows_);
+    Vector rowMeans = this->getRowMeans();
+
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            rowVariances += std::pow(this->get(r, c) - rowVariances.get(r), 2.0);
+        }
+    }
+
+    return rowVariances / static_cast<double>(this->numRows_ - 1);
+}
 // ==============================================================================================
 // MATRIX HELPERS
 // ==============================================================================================
@@ -178,4 +224,109 @@ Matrix jmll::core::identity(int order) {
     }
 
     return res;
+}
+
+Matrix operator+(Matrix lhs, const Matrix& rhs) {
+    lhs += rhs;
+    return lhs;
+}
+
+Matrix operator+(Matrix lhs, double rhs) {
+    lhs += rhs;
+    return lhs;
+}
+
+Matrix operator+(double lhs, Matrix rhs) {
+    rhs += lhs;
+    return rhs;
+}
+
+Matrix operator-(Matrix lhs, const Matrix& rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Matrix operator-(Matrix lhs, double rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Matrix operator-(double lhs, Matrix rhs) {
+    rhs -= lhs;
+    return rhs;
+}
+
+Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
+    // TODO: throw exception if lhs columns != rhs rows
+    Matrix result(lhs.getNumRows(), rhs.getNumRows());
+
+    for (int ra = 0; ra < lhs.getNumRows(); ra++) {
+        for (int cb = 0; cb < rhs.getNumCols(); cb++) {
+            double val = 0.0;
+            for (int i = 0; i < lhs.getNumCols(); i++) {
+                val += lhs.get(ra, i) * rhs.get(i, cb);
+            }
+            result.set(ra, cb, val);
+        }
+    }
+
+    return result;
+}
+
+Vector operator*(const Matrix& lhs, const Vector& rhs) {
+    // TODO: check lhs cols == rhs rows
+    // TODO: check rhs is a column vector
+
+    int common = lhs.getNumCols();
+    Vector result(lhs.getNumRows());
+
+    for (int r = 0; r < lhs.getNumRows(); r++) {
+        double value = 0.0;
+        for (int i = 0; i < common; i++) {
+            value += lhs.get(r, i) * rhs.get(i);
+        }
+        result.set(r, value);
+    }
+
+    return result;
+}
+
+Vector operator*(const Vector& lhs, const Matrix& rhs) {
+    // TODO: check lhs is a row vector
+    // TODO: check lhs cols = rhs rows
+
+    int common = lhs.getNumCells();
+    Vector result(rhs.getNumCols());
+    result.transpose();
+
+    for (int c = 0; c < rhs.getNumCols(); c++) {
+        double value = 0.0;
+        for (int i = 0; i < common; i++) {
+            value += lhs.get(i) * rhs.get(i, c);
+        }
+        result.set(c, value);
+    }
+
+    return result;
+}
+
+Matrix operator*(Matrix lhs, double rhs) {
+    lhs *= rhs;
+    return lhs;
+}
+
+Matrix operator*(double lhs, Matrix rhs) {
+    rhs *= lhs;
+    return rhs;
+}
+
+Matrix operator/(Matrix lhs, double rhs) {
+    // Check that rhs != 0
+    lhs /= rhs;
+    return lhs;
+}
+
+Matrix operator/(double lhs, Matrix rhs) {
+    rhs /= lhs;
+    return rhs;
 }

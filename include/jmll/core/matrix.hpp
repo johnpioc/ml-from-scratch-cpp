@@ -31,20 +31,21 @@ class Matrix {
 
     [[nodiscard]] Matrix getRows(const std::vector<int>& indices) const;
 
+    [[nodiscard]] Vector getCol(int c) const;
+
     /* Sets the value at a given row and column number */
     void set(int r, int c, double val);
 
-    /* Matrix multiplication operator overload */
-    [[nodiscard]] Matrix operator*(const Matrix& other) const;
+    Matrix& operator+=(const Matrix& rhs);
+    Matrix& operator+=(double rhs);
 
-    /* Matrix multiplication with vector operator overload */
-    [[nodiscard]] Vector operator*(const Vector& vec) const;
+    Matrix& operator-=(const Matrix& rhs);
+    Matrix& operator-=(double rhs);
 
-    /* Matrix Scalar Multiplication */
-    [[nodiscard]] Matrix operator*(double scalar) const;
+    Matrix& operator*=(const Matrix& rhs);
+    Matrix& operator*=(double rhs);
 
-    /* Matrix addition */
-    [[nodiscard]] Matrix operator+(const Matrix& other) const;
+    Matrix& operator/=(double rhs);
 
     /* Returns the transposed version of this matrix */
     [[nodiscard]] Matrix transpose() const;
@@ -54,9 +55,34 @@ class Matrix {
 
     /* Augments the matrix to prepend a column of 1.0s at the start */
     [[nodiscard]] Matrix prependOnes() const noexcept;
+
+    [[nodiscard]] Vector getColMeans() const;
+
+    [[nodiscard]] Vector getRowMeans() const;
+
+    [[nodiscard]] Vector getColVariances() const;
+
+    [[nodiscard]] Vector getRowVariances() const;
 };
 
 /* Returns identity matrix of given order */
 [[nodiscard]] Matrix identity(int order);
+
+[[nodiscard]] Matrix operator+(Matrix lhs, const Matrix& rhs);
+[[nodiscard]] Matrix operator+(Matrix lhs, double rhs);
+[[nodiscard]] Matrix operator+(double lhs, Matrix rhs);
+
+[[nodiscard]] Matrix operator-(Matrix lhs, const Matrix& rhs);
+[[nodiscard]] Matrix operator-(Matrix lhs, double rhs);
+[[nodiscard]] Matrix operator-(double lhs, Matrix rhs);
+
+[[nodiscard]] Matrix operator*(const Matrix& lhs, const Matrix& rhs);
+[[nodiscard]] Vector operator*(const Matrix& lhs, const Vector& rhs);
+[[nodiscard]] Vector operator*(const Vector& lhs, const Matrix& rhs);
+[[nodiscard]] Matrix operator*(Matrix lhs, double rhs);
+[[nodiscard]] Matrix operator*(double lhs, Matrix rhs);
+
+[[nodiscard]] Matrix operator/(Matrix lhs, double rhs);
+[[nodiscard]] Matrix operator/(double lhs, Matrix rhs);
 
 }  // namespace jmll::core

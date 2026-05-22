@@ -43,9 +43,21 @@ class Vector {
     [[nodiscard]] Vector operator*(double scalar) const;
 
     /* Vector Subtraction by Assignmnent */
-    [[nodiscard]] Vector operator-=(const Vector& other);
+    Vector operator-=(const Vector& rhs);
 
     /* Vector Subtraction */
-    [[nodiscard]] Vector operator-(const Vector& rhs);
+    [[nodiscard]] Vector operator-(const Vector& other);
+
+    Vector operator+=(const Vector& rhs);
+
+    [[nodiscard]] Vector operator+(const Vector& other);
+
+    Vector operator+=(double scalar);
+
+    [[nodiscard]] Vector operator+(double scalar) const;
+
+    Vector operator/=(const Vector& rhs);
+
+    [[nodiscard]] Vector operator/(double scalar);
 };
 }  // namespace jmll::core
