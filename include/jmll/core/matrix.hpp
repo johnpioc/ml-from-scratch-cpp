@@ -70,11 +70,9 @@ class Matrix {
 
 [[nodiscard]] Matrix operator+(Matrix lhs, const Matrix& rhs);
 [[nodiscard]] Matrix operator+(Matrix lhs, double rhs);
-[[nodiscard]] Matrix operator+(double lhs, Matrix rhs);
 
 [[nodiscard]] Matrix operator-(Matrix lhs, const Matrix& rhs);
 [[nodiscard]] Matrix operator-(Matrix lhs, double rhs);
-[[nodiscard]] Matrix operator-(double lhs, Matrix rhs);
 
 [[nodiscard]] Matrix operator*(const Matrix& lhs, const Matrix& rhs);
 [[nodiscard]] Vector operator*(const Matrix& lhs, const Vector& rhs);
@@ -83,6 +81,5 @@ class Matrix {
 [[nodiscard]] Matrix operator*(double lhs, Matrix rhs);
 
 [[nodiscard]] Matrix operator/(Matrix lhs, double rhs);
-[[nodiscard]] Matrix operator/(double lhs, Matrix rhs);
 
 }  // namespace jmll::core

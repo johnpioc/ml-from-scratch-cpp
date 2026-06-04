@@ -34,40 +34,46 @@ std::vector<double> Vector::getDataByIndices(const std::vector<int>& indices) co
 
 void Vector::transpose() { this->isColVector_ = !this->isColVector_; }
 
-double Vector::operator*(const Vector& other) const {
-    // TODO: check that this vector is a column vector and other is a row vector
-    /* TODO: check that the number of cols this vector has equals the number of rows other vector
-     * has
-     */
+//================================================================================================
+// VECTOR HELPER FUNCTIONS
+//================================================================================================
 
-    double dotProduct = 0.0;
-
-    for (int i = 0; i < this->numCells_; i++) {
-        dotProduct += this->get(i) * other.get(i);
-    }
-
-    return dotProduct;
+Vector operator+(Vector lhs, const Vector& rhs) {
+    lhs += rhs;
+    return lhs;
 }
 
-Vector Vector::operator*(double scalar) const {
-    Vector result(this->data_);
-
-    for (int i = 0; i < result.getNumCells(); i++) {
-        result.set(i, result.get(i) * scalar);
-    }
-
-    return result;
+Vector operator+(Vector lhs, double rhs) {
+    lhs += rhs;
+    return lhs;
 }
 
-Vector Vector::operator-=(const Vector& other) {
-    // TODO: dimension check
-    // TODO: check both are col vectors or both are row vectors
-
-    for (int i = 0; i < this->numCells_; i++) {
-        this->set(i, this->get(i) - other.get(i));
-    }
-
-    return *this;
+Vector operator-(Vector lhs, const Vector& rhs) {
+    lhs -= rhs;
+    return lhs;
 }
 
-Vector Vector::operator-(const Vector& rhs) { return *this -= rhs; }
+Vector operator-(Vector lhs, double rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Vector operator*(Vector lhs, double rhs) {
+    lhs *= rhs;
+    return lhs;
+}
+
+Vector operator*(double lhs, Vector rhs) {
+    rhs *= lhs;
+    return rhs;
+}
+
+Vector operator*(Vector lhs, const Vector& rhs) {
+    lhs *= rhs;
+    return lhs;
+}
+
+Vector operator/(Vector lhs, double rhs) {
+    lhs /= rhs;
+    return lhs;
+}

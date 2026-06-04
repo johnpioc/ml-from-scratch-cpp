@@ -213,6 +213,7 @@ Vector Matrix::getRowVariances() const {
 
     return rowVariances / static_cast<double>(this->numRows_ - 1);
 }
+
 // ==============================================================================================
 // MATRIX HELPERS
 // ==============================================================================================
@@ -236,11 +237,6 @@ Matrix operator+(Matrix lhs, double rhs) {
     return lhs;
 }
 
-Matrix operator+(double lhs, Matrix rhs) {
-    rhs += lhs;
-    return rhs;
-}
-
 Matrix operator-(Matrix lhs, const Matrix& rhs) {
     lhs -= rhs;
     return lhs;
@@ -249,11 +245,6 @@ Matrix operator-(Matrix lhs, const Matrix& rhs) {
 Matrix operator-(Matrix lhs, double rhs) {
     lhs -= rhs;
     return lhs;
-}
-
-Matrix operator-(double lhs, Matrix rhs) {
-    rhs -= lhs;
-    return rhs;
 }
 
 Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
@@ -324,9 +315,4 @@ Matrix operator/(Matrix lhs, double rhs) {
     // Check that rhs != 0
     lhs /= rhs;
     return lhs;
-}
-
-Matrix operator/(double lhs, Matrix rhs) {
-    rhs /= lhs;
-    return rhs;
 }

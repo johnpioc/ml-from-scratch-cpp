@@ -36,28 +36,37 @@ class Vector {
     /* Col Vector <=> Row Vector */
     void transpose();
 
-    /* Dot Product */
-    [[nodiscard]] double operator*(const Vector& other) const;
+    /* Vector Addition */
+    Vector& operator+=(const Vector& rhs);
 
-    /* Scalar Multiplication */
-    [[nodiscard]] Vector operator*(double scalar) const;
-
-    /* Vector Subtraction by Assignmnent */
-    Vector operator-=(const Vector& rhs);
+    /* Scalar Addition */
+    Vector& operator+=(double rhs);
 
     /* Vector Subtraction */
-    [[nodiscard]] Vector operator-(const Vector& other);
+    Vector& operator-=(const Vector& rhs);
 
-    Vector operator+=(const Vector& rhs);
+    /* Scalar Subtraction */
+    Vector& operator-=(double rhs);
 
-    [[nodiscard]] Vector operator+(const Vector& other);
+    /* Dot Product */
+    Vector& operator*=(const Vector& rhs);
 
-    Vector operator+=(double scalar);
+    /* Scalar Multiplication */
+    Vector& operator*=(double rhs);
 
-    [[nodiscard]] Vector operator+(double scalar) const;
-
-    Vector operator/=(const Vector& rhs);
-
-    [[nodiscard]] Vector operator/(double scalar);
+    /* Vector Element-wise Division */
+    Vector& operator/=(double rhs);
 };
+
+[[nodiscard]] Vector operator+(Vector lhs, const Vector& rhs);
+[[nodiscard]] Vector operator+(Vector lhs, double rhs);
+
+[[nodiscard]] Vector operator-(Vector lhs, const Vector& rhs);
+[[nodiscard]] Vector operator-(Vector lhs, double rhs);
+
+[[nodiscard]] Vector operator*(Vector lhs, double rhs);
+[[nodiscard]] Vector operator*(double lhs, Vector rhs);
+[[nodiscard]] Vector operator*(Vector lhs, const Vector& rhs);
+
+[[nodiscard]] Vector operator/(Vector lhs, double rhs);
 }  // namespace jmll::core
