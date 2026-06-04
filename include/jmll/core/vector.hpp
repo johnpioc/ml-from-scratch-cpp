@@ -48,9 +48,6 @@ class Vector {
     /* Scalar Subtraction */
     Vector& operator-=(double rhs);
 
-    /* Dot Product */
-    Vector& operator*=(const Vector& rhs);
-
     /* Scalar Multiplication */
     Vector& operator*=(double rhs);
 
@@ -66,7 +63,7 @@ class Vector {
 
 [[nodiscard]] Vector operator*(Vector lhs, double rhs);
 [[nodiscard]] Vector operator*(double lhs, Vector rhs);
-[[nodiscard]] Vector operator*(Vector lhs, const Vector& rhs);
+[[nodiscard]] double operator*(const Vector& lhs, const Vector& rhs);
 
 [[nodiscard]] Vector operator/(Vector lhs, double rhs);
 }  // namespace jmll::core
