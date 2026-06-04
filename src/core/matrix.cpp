@@ -35,6 +35,17 @@ Matrix Matrix::getRows(const std::vector<int>& indices) const {
     return Matrix(rows);
 }
 
+Vector Matrix::getCol(int c) const {
+    // TODO: check c is within bounds
+    Vector result(this->getNumRows());
+    result.transpose();
+
+    for (int i = 0; i < result.getNumCells(); i++) {
+        result.set(i, this->get(i, c));
+    }
+    return result;
+}
+
 void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 
 Matrix& Matrix::operator+=(const Matrix& rhs) {

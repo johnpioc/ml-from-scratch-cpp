@@ -120,7 +120,7 @@ TEST(Matrix, FuzzTest) {
                 jmll::core::Matrix operandA(actual.getNumRows(), actual.getNumCols());
                 Eigen::MatrixXd operandB(actual.getNumRows(), actual.getNumCols());
                 initialiseMatrices(operandA, operandB);
-                actual = actual * operandA;
+                actual *= operandA;
                 expected = expected * operandB;
                 break;
             }
