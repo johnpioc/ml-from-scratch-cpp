@@ -85,37 +85,37 @@ Vector& Vector::operator/=(double rhs) {
 // VECTOR HELPER FUNCTIONS
 //================================================================================================
 
-Vector operator+(Vector lhs, const Vector& rhs) {
+Vector jmll::core::operator+(Vector lhs, const Vector& rhs) {
     lhs += rhs;
     return lhs;
 }
 
-Vector operator+(Vector lhs, double rhs) {
+Vector jmll::core::operator+(Vector lhs, double rhs) {
     lhs += rhs;
     return lhs;
 }
 
-Vector operator-(Vector lhs, const Vector& rhs) {
+Vector jmll::core::operator-(Vector lhs, const Vector& rhs) {
     lhs -= rhs;
     return lhs;
 }
 
-Vector operator-(Vector lhs, double rhs) {
+Vector jmll::core::operator-(Vector lhs, double rhs) {
     lhs -= rhs;
     return lhs;
 }
 
-Vector operator*(Vector lhs, double rhs) {
+Vector jmll::core::operator*(Vector lhs, double rhs) {
     lhs *= rhs;
     return lhs;
 }
 
-Vector operator*(double lhs, Vector rhs) {
+Vector jmll::core::operator*(double lhs, Vector rhs) {
     rhs *= lhs;
     return rhs;
 }
 
-double operator*(const Vector& lhs, const Vector& rhs) {
+double jmll::core::operator*(const Vector& lhs, const Vector& rhs) {
     // TODO: check vectors are same size
     double result = 0;
 
@@ -126,7 +126,7 @@ double operator*(const Vector& lhs, const Vector& rhs) {
     return result;
 }
 
-Vector operator/(Vector lhs, double rhs) {
+Vector jmll::core::operator/(Vector lhs, double rhs) {
     lhs /= rhs;
     return lhs;
 }

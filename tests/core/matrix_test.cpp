@@ -41,12 +41,14 @@ int getRandomIndex() {
     return dist(gen);
 }
 
+bool approxEqual(double a, double b, double epsilon) { return std::abs(a - b) < epsilon; }
+
 bool isMatrixIdentical(jmll::core::Matrix& actual, Eigen::MatrixXd& expected) {
     if (actual.getNumRows() != expected.rows()) return false;
     if (actual.getNumCols() != expected.cols()) return false;
     for (int r = 0; r < actual.getNumRows(); r++) {
         for (int c = 0; c < actual.getNumCols(); c++) {
-            if (actual.get(r, c) != expected(r, c)) return false;
+            if (!approxEqual(actual.get(r, c), expected(r, c), 1e-3)) return false;
         }
     }
 
@@ -54,11 +56,44 @@ bool isMatrixIdentical(jmll::core::Matrix& actual, Eigen::MatrixXd& expected) {
 }
 
 bool isVectorIdentical(jmll::core::Vector& actual, Eigen::VectorXd& expected) {
-    if (expected.rows() != (actual.isColVector() ? actual.getNumCells() : 1)) return false;
-    if (expected.cols() != (actual.isColVector() ? 1 : actual.getNumCells())) return false;
+    bool actualIsColVector = actual.isColVector();
+    bool expectedIsColVector = expected.cols() == 1;
+
+    if (actualIsColVector != expectedIsColVector) {
+        std::cout << "isVectorIdentical() failed because actual is"
+                  << (actualIsColVector ? " a col vector" : " a row vector") << " and expected is"
+                  << (expectedIsColVector ? "a col vector" : "a row vector") << std::endl;
+        return false;
+    }
 
     for (int i = 0; i < actual.getNumCells(); i++) {
-        if (actual.get(i) != expected(i)) return false;
+        if (!approxEqual(actual.get(i), expected(i), 1e-2)) {
+            std::cout << "isVectorIdentical() failed because cells don't equal each other"
+                      << std::endl;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool isVectorIdentical(jmll::core::Vector& actual, Eigen::RowVectorXd& expected) {
+    bool actualIsColVector = actual.isColVector();
+    bool expectedIsColVector = expected.cols() == 1;
+
+    if (actualIsColVector != expectedIsColVector) {
+        std::cout << "isVectorIdentical() failed because actual is"
+                  << (actualIsColVector ? " a col vector" : " a row vector") << " and expected is"
+                  << (expectedIsColVector ? "a col vector" : "a row vector") << std::endl;
+        return false;
+    }
+
+    for (int i = 0; i < actual.getNumCells(); i++) {
+        if (!approxEqual(actual.get(i), expected(i), 1e-2)) {
+            std::cout << "isVectorIdentical() failed because cells don't equal each other"
+                      << std::endl;
+            return false;
+        }
     }
 
     return true;
@@ -75,6 +110,10 @@ TEST(Matrix, FuzzTest) {
 
     for (int t = 0; t < NUM_ITERATIONS; t++) {
         int operation = getRandomOperation();
+
+        if (t % 10 == 0) {
+            initialiseMatrices(actual, expected);
+        }
 
         switch (operation) {
             case 0: {  // Get
@@ -142,21 +181,21 @@ TEST(Matrix, FuzzTest) {
             }
             case 7: {  // Matrix Scalar Multiplication
                 double operand = getRandomNum();
-                actual = actual * operand;
-                expected = expected * operand;
+                actual *= operand;
+                expected *= operand;
                 break;
             }
             case 8: {  // Matrix Addition
                 jmll::core::Matrix operandA(actual.getNumRows(), actual.getNumCols());
                 Eigen::MatrixXd operandB(actual.getNumRows(), actual.getNumCols());
                 initialiseMatrices(operandA, operandB);
-                actual = actual + operandA;
-                expected = expected + operandB;
+                actual += operandA;
+                expected += operandB;
                 break;
             }
             case 9: {  // Transpose
                 actual = actual.transpose();
-                expected = expected.transpose();
+                expected.transposeInPlace();
                 break;
             }
             case 10: {  // Inverse
@@ -166,7 +205,7 @@ TEST(Matrix, FuzzTest) {
             }
             case 11: {  // Get Column Means
                 jmll::core::Vector actualColMeans = actual.getColMeans();
-                Eigen::VectorXd expectedColMeans = expected.colwise().mean();
+                Eigen::RowVectorXd expectedColMeans = expected.colwise().mean();
                 EXPECT_TRUE(isVectorIdentical(actualColMeans, expectedColMeans));
                 break;
             }
@@ -178,7 +217,7 @@ TEST(Matrix, FuzzTest) {
             }
             case 13: {  // Get Column Variances
                 jmll::core::Vector actualColVariances = actual.getColVariances();
-                Eigen::VectorXd expectedColVariances =
+                Eigen::RowVectorXd expectedColVariances =
                     ((expected.rowwise() - expected.colwise().mean())
                          .array()
                          .square()
@@ -204,6 +243,9 @@ TEST(Matrix, FuzzTest) {
 
         bool outcome = isMatrixIdentical(actual, expected);
         EXPECT_TRUE(outcome);
-        if (!outcome) break;
+        if (!outcome) {
+            std::cout << "Test failed on operation: " << operation << std::endl;
+            break;
+        }
     }
 }

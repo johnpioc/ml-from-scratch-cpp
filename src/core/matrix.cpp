@@ -38,7 +38,6 @@ Matrix Matrix::getRows(const std::vector<int>& indices) const {
 Vector Matrix::getCol(int c) const {
     // TODO: check c is within bounds
     Vector result(this->getNumRows());
-    result.transpose();
 
     for (int i = 0; i < result.getNumCells(); i++) {
         result.set(i, this->get(i, c));
@@ -180,6 +179,7 @@ Matrix Matrix::prependOnes() const noexcept {
 
 Vector Matrix::getColMeans() const {
     Vector colMeans(this->numCols_);
+    colMeans.transpose();
 
     for (int r = 0; r < this->numRows_; r++) {
         colMeans += this->getRow(r);
@@ -190,7 +190,6 @@ Vector Matrix::getColMeans() const {
 
 Vector Matrix::getRowMeans() const {
     Vector rowMeans(this->numRows_);
-    rowMeans.transpose();
 
     for (int c = 0; c < this->numCols_; c++) {
         rowMeans += this->getCol(c);
@@ -202,14 +201,16 @@ Vector Matrix::getRowMeans() const {
 Vector Matrix::getColVariances() const {
     Vector colVariances(this->numCols_);
     Vector colMeans = this->getColMeans();
+    colVariances.transpose();
 
     for (int r = 0; r < this->numRows_; r++) {
         for (int c = 0; c < this->numCols_; c++) {
-            colVariances += std::pow(this->get(r, c) - colVariances.get(c), 2.0);
+            double residual = this->get(r, c) - colMeans.get(c);
+            colVariances.set(c, colVariances.get(c) + residual * residual);
         }
     }
 
-    return colVariances / static_cast<double>(this->numCols_ - 1);
+    return colVariances / static_cast<double>(this->numRows_ - 1);
 }
 
 Vector Matrix::getRowVariances() const {
@@ -218,11 +219,12 @@ Vector Matrix::getRowVariances() const {
 
     for (int r = 0; r < this->numRows_; r++) {
         for (int c = 0; c < this->numCols_; c++) {
-            rowVariances += std::pow(this->get(r, c) - rowVariances.get(r), 2.0);
+            double residual = this->get(r, c) - rowMeans.get(r);
+            rowVariances.set(r, rowVariances.get(r) + residual * residual);
         }
     }
 
-    return rowVariances / static_cast<double>(this->numRows_ - 1);
+    return rowVariances / static_cast<double>(this->numCols_ - 1);
 }
 
 // ==============================================================================================
@@ -238,44 +240,47 @@ Matrix jmll::core::identity(int order) {
     return res;
 }
 
-Matrix operator+(Matrix lhs, const Matrix& rhs) {
+Matrix jmll::core::operator+(Matrix lhs, const Matrix& rhs) {
     lhs += rhs;
     return lhs;
 }
 
-Matrix operator+(Matrix lhs, double rhs) {
+Matrix jmll::core::operator+(Matrix lhs, double rhs) {
     lhs += rhs;
     return lhs;
 }
 
-Matrix operator-(Matrix lhs, const Matrix& rhs) {
+Matrix jmll::core::operator-(Matrix lhs, const Matrix& rhs) {
     lhs -= rhs;
     return lhs;
 }
 
-Matrix operator-(Matrix lhs, double rhs) {
+Matrix jmll::core::operator-(Matrix lhs, double rhs) {
     lhs -= rhs;
     return lhs;
 }
 
-Matrix operator*(const Matrix& lhs, const Matrix& rhs) {
+Matrix jmll::core::operator*(const Matrix& lhs, const Matrix& rhs) {
     // TODO: throw exception if lhs columns != rhs rows
-    Matrix result(lhs.getNumRows(), rhs.getNumRows());
+    int m = lhs.getNumRows();
+    int n = lhs.getNumCols();
+    int p = rhs.getNumCols();
 
-    for (int ra = 0; ra < lhs.getNumRows(); ra++) {
-        for (int cb = 0; cb < rhs.getNumCols(); cb++) {
+    Matrix result(m, p);
+
+    for (int ra = 0; ra < m; ra++) {
+        for (int cb = 0; cb < p; cb++) {
             double val = 0.0;
-            for (int i = 0; i < lhs.getNumCols(); i++) {
+            for (int i = 0; i < n; i++) {
                 val += lhs.get(ra, i) * rhs.get(i, cb);
             }
             result.set(ra, cb, val);
         }
     }
-
     return result;
 }
 
-Vector operator*(const Matrix& lhs, const Vector& rhs) {
+Vector jmll::core::operator*(const Matrix& lhs, const Vector& rhs) {
     // TODO: check lhs cols == rhs rows
     // TODO: check rhs is a column vector
 
@@ -293,7 +298,7 @@ Vector operator*(const Matrix& lhs, const Vector& rhs) {
     return result;
 }
 
-Vector operator*(const Vector& lhs, const Matrix& rhs) {
+Vector jmll::core::operator*(const Vector& lhs, const Matrix& rhs) {
     // TODO: check lhs is a row vector
     // TODO: check lhs cols = rhs rows
 
@@ -312,17 +317,17 @@ Vector operator*(const Vector& lhs, const Matrix& rhs) {
     return result;
 }
 
-Matrix operator*(Matrix lhs, double rhs) {
+Matrix jmll::core::operator*(Matrix lhs, double rhs) {
     lhs *= rhs;
     return lhs;
 }
 
-Matrix operator*(double lhs, Matrix rhs) {
+Matrix jmll::core::operator*(double lhs, Matrix rhs) {
     rhs *= lhs;
     return rhs;
 }
 
-Matrix operator/(Matrix lhs, double rhs) {
+Matrix jmll::core::operator/(Matrix lhs, double rhs) {
     // Check that rhs != 0
     lhs /= rhs;
     return lhs;
