@@ -53,9 +53,7 @@ class GridSearcher {
                 paramIndices, std::make_index_sequence<sizeof...(Params)>{}, paramVectors...);
 
             ModelType model = std::apply(
-                [](auto&&... args) {
-                    return ModelType(std::forward<decltype(args)>(args)...);
-                },
+                [](auto&&... args) { return ModelType(std::forward<decltype(args)>(args)...); },
                 currentCombo);
 
             double score = model.crossValidate(x, y, 4);
