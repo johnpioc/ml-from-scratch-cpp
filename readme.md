@@ -12,3 +12,11 @@ I attribute my learning to the following textbooks:
 - **C++ High Performance**: by Andrist and Sehr
 - **Beautiful C++** by Davidson and Gregory
 - **C++ Software Design** by Iglberger
+
+### Running Tests
+
+```shell
+cmake -S . -B build
+cmake --build build
+ctest --test-dir build
+```

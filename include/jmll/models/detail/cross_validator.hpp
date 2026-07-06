@@ -1,22 +1,22 @@
 #pragma once
 
-#include <jmll/models/tuning/evaluation_metric.hpp>
-#include <jmll/models/detail/model.hpp>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
+#include <jmll/models/detail/model.hpp>
+#include <jmll/models/tuning/evaluation_metric.hpp>
 
 namespace jmll::models::detail {
 
 template <tuning::EvaluationMetric EvaluationMetric>
 class CrossValidator {
-private:
+   private:
     EvaluationMetric metric_;
 
-public:
+   public:
     template <Model Model>
     double crossValidate(Model model, core::Matrix& x, core::Vector& y, int numOfFolds) {
         int numPerFold = x.numRows / numOfFolds;
-       
+
         double sum = 0.0;
         for (int i = 0; i < numOfFolds; i++) {
             // Retrieve train and test indices
@@ -26,8 +26,10 @@ public:
             int start = i * numPerFold;
             int end = start + numPerFold;
             for (int j = 0; j < x.numRows; j++) {
-                if (start <= j && j <= end) testIndices.push_back(j);
-                else trainIndices.push_back(j);
+                if (start <= j && j <= end)
+                    testIndices.push_back(j);
+                else
+                    trainIndices.push_back(j);
             }
 
             // Retrieve train and test data
@@ -41,7 +43,7 @@ public:
             sum += model.evaluate(yPred, yTest);
         }
 
-        return sum / (double) numOfFolds;
+        return sum / (double)numOfFolds;
     }
 };
-}
+}  // namespace jmll::models::detail

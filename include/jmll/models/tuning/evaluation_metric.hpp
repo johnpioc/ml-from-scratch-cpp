@@ -7,60 +7,60 @@
 namespace jmll::models::tuning {
 
 template <typename T>
-concept EvaluationMetric = requires(T metric, core::Vector& yPred, core::Vector& yTrue,
-    int numOfPredictors) {
-    { metric.evaluate(yPred, yTrue, numOfPredictors) } -> std::same_as<double>;
-};
+concept EvaluationMetric =
+    requires(T metric, core::Vector& yPred, core::Vector& yTrue, int numOfPredictors) {
+        { metric.evaluate(yPred, yTrue, numOfPredictors) } -> std::same_as<double>;
+    };
 
-// =============================================================================================== 
+// ===============================================================================================
 // REGRESSION EVALUATION METRICS
-// =============================================================================================== 
+// ===============================================================================================
 //
 template <typename T>
-concept RegressionEvaluationMetric = 
+concept RegressionEvaluationMetric =
     EvaluationMetric<T> && forRegression<T> &&
     requires(T metric, core::Vector& yPred, core::Vector& yTrue, int numOfPredictors) {
         { metric.evaluate(yPred, yTrue, numOfPredictors) } -> std::same_as<double>;
-};
+    };
 
 class RSquared {
-public:
+   public:
     double evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors);
 };
 
-template<>
+template <>
 inline constexpr bool forRegression<RSquared> = true;
 
 class MallowsCp {
-public:
+   public:
     double evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors);
 };
 
-template<>
+template <>
 inline constexpr bool forRegression<MallowsCp> = true;
 
 class AIC {
-public:
+   public:
     double evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors);
 };
 
-template<>
+template <>
 inline constexpr bool forRegression<AIC> = true;
 
 class BIC {
-public:
+   public:
     double evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors);
 };
 
-template<>
+template <>
 inline constexpr bool forRegression<BIC> = true;
 
 class AdjustedRSquared {
-public:
+   public:
     double evaluate(core::Vector& yPred, core::Vector& yTrue, int numOfPredictors);
 };
 
-template<>
+template <>
 inline constexpr bool forRegression<AdjustedRSquared> = true;
 
-}
+}  // namespace jmll::models::tuning

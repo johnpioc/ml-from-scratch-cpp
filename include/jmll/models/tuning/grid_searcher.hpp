@@ -8,7 +8,7 @@ namespace jmll::models::tuning {
 
 template <detail::Model ModelType>
 class GridSearcher {
-private:
+   private:
     std::vector<int> getParamIndices(int index, std::vector<size_t>& paramSizes) {
         std::vector<int> paramIndices(paramSizes.size());
 
@@ -23,16 +23,15 @@ private:
 
     template <size_t... Indexes, typename... ParamVector>
     auto getComboTuple(std::vector<int>& indices, std::index_sequence<Indexes...>,
-        std::vector<ParamVector>&... paramVectors) {
+                       std::vector<ParamVector>&... paramVectors) {
         return std::make_tuple(paramVectors[indices[Indexes]]...);
     }
 
-
-public:
+   public:
     template <typename... Params>
-    requires::std::constructible_from<ModelType, Params...>
+        requires ::std::constructible_from<ModelType, Params...>
     ModelType get(core::Matrix& x, core::Vector& y, std::vector<Params>&... paramVectors) {
-        std::vector<size_t> paramSizes = { paramVectors.size()... };
+        std::vector<size_t> paramSizes = {paramVectors.size()...};
         int numParams = paramSizes.size();
 
         int totalCombinations = 1;
@@ -40,29 +39,22 @@ public:
 
         std::vector<int> paramIndices = getParamIndices(0, paramSizes);
         auto currentCombo = getComboTuple(
-            paramIndices,
-            std::make_index_sequence<sizeof... (Params)>{},
-            paramVectors...
-        );
+            paramIndices, std::make_index_sequence<sizeof...(Params)>{}, paramVectors...);
 
-        ModelType output = std::apply([](auto&&... args) {
-            return ModelType(std::forward<decltype(args)>(args)...);
-        }, currentCombo); 
+        ModelType output = std::apply(
+            [](auto&&... args) { return ModelType(std::forward<decltype(args)>(args)...); },
+            currentCombo);
 
         double bestScore = output.crossValidate(x, y, 4);
 
         for (int i = 1; i < totalCombinations; i++) {
             paramIndices = getParamIndices(i, paramSizes);
             currentCombo = getComboTuple(
-                paramIndices,
-                std::make_index_sequence<sizeof... (Params)>{},
-                paramVectors...
-            );
+                paramIndices, std::make_index_sequence<sizeof...(Params)>{}, paramVectors...);
 
-            ModelType model = std::apply([](auto&&... args) {
-                return ModelType(std::forward<decltype(args)>(args)...);
-
-            }, currentCombo);
+            ModelType model = std::apply(
+                [](auto&&... args) { return ModelType(std::forward<decltype(args)>(args)...); },
+                currentCombo);
 
             double score = model.crossValidate(x, y, 4);
 
@@ -76,4 +68,4 @@ public:
     }
 };
 
-}
+}  // namespace jmll::models::tuning

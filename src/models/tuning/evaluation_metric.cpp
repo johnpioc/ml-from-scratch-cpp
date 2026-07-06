@@ -1,14 +1,14 @@
 #include <cmath>
-#include <jmll/core/vector.hpp>
 #include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
 #include <jmll/models/tuning/evaluation_metric.hpp>
 
 using namespace jmll::core;
 using namespace jmll::models::tuning;
 
-// =============================================================================================== 
+// ===============================================================================================
 // HELPERS
-// =============================================================================================== 
+// ===============================================================================================
 double calculateRSS(Vector& yPred, Vector& yTrue) {
     int n = yPred.numCells;
     double rss = 0;
@@ -20,9 +20,9 @@ double calculateRSS(Vector& yPred, Vector& yTrue) {
     return rss;
 }
 
-// =============================================================================================== 
+// ===============================================================================================
 // REGRESSION EVALUATION METRICS
-// =============================================================================================== 
+// ===============================================================================================
 double RSquared::evaluate(Vector& yPred, Vector& yTrue, int numOfPredictors) {
     int n = yPred.numCells;
 

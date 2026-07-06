@@ -8,4 +8,4 @@ __MACOSX
 .husky
 node_modules/
 package-lock.json
-.cache/
+Testing/

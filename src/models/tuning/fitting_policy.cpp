@@ -1,5 +1,5 @@
-#include <jmll/core/vector.hpp>
 #include <jmll/core/matrix.hpp>
+#include <jmll/core/vector.hpp>
 #include <jmll/models/tuning/fitting_policy.hpp>
 
 using namespace jmll::core;
@@ -13,7 +13,7 @@ std::pair<Vector, int> OLS::fit(Matrix& x, Vector& y) {
     Matrix XT = augmented.transpose();
     Matrix XTX = XT * augmented;
     Matrix XTX_inv = XTX.inverse();
-    return { XTX_inv * XT * y, x.numRows};
+    return {XTX_inv * XT * y, x.numRows};
 }
 
 std::pair<Vector, int> Ridge::fit(Matrix& x, Vector& y) {
@@ -26,5 +26,5 @@ std::pair<Vector, int> Ridge::fit(Matrix& x, Vector& y) {
     Matrix XTX_lambdaMat_inv = XTX_lambdaMat.inverse();
 
     // TODO: create a function that obtains the number of predictors for Ridge Regression
-    return { XTX_lambdaMat_inv * XT * y, x.numRows };
+    return {XTX_lambdaMat_inv * XT * y, x.numRows};
 }
