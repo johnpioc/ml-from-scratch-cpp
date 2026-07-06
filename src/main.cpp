@@ -1,32 +1,29 @@
-#include "jmll/data_preprocessing/datasets.hpp"
-#include "jmll/data_preprocessing/train_test_split.hpp"
+#include <chrono>
+#include <iomanip>
+#include <iostream>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
 #include <jmll/models/linear_regression.hpp>
 #include <jmll/models/tuning/evaluation_metric.hpp>
 #include <jmll/models/tuning/fitting_policy.hpp>
 #include <jmll/models/tuning/grid_searcher.hpp>
-
 #include <stdexcept>
 #include <string>
-#include <chrono>
-#include <iostream>
-#include <iomanip>
+
+#include "jmll/data_preprocessing/datasets.hpp"
+#include "jmll/data_preprocessing/train_test_split.hpp"
 
 // ===============================================================================================
 // CONSTANTS AND TYPES
 // ===============================================================================================
 const double TEST_SPLIT = 0.2;
 
-const std::string USAGE_MSG = 
+const std::string USAGE_MSG =
     "[Usage]: ./jmll [model_type]\n"
     "Model Types:\n"
     "Linear Regression: -linReg";
 
-enum ModelType {
-    NONE,
-    LINEAR_REGRESSION
-};
+enum ModelType { NONE, LINEAR_REGRESSION };
 
 // ===============================================================================================
 // FUNCTION DECLARATIONS
@@ -49,7 +46,7 @@ int main(int argc, char* argv[]) {
 // HELPERS
 // ===============================================================================================
 ModelType parseCliArguments(int argc, char* argv[]) {
-    // Skip program name 
+    // Skip program name
     argc--;
     argv++;
 
@@ -58,23 +55,23 @@ ModelType parseCliArguments(int argc, char* argv[]) {
     while (argc > 0) {
         std::string current(argv[0]);
 
-        if (modelType != ModelType::NONE) throwUsageError();
-        else if (current == "-linReg") modelType = ModelType::LINEAR_REGRESSION;
-        else throwUsageError();
+        if (modelType != ModelType::NONE)
+            throwUsageError();
+        else if (current == "-linReg")
+            modelType = ModelType::LINEAR_REGRESSION;
+        else
+            throwUsageError();
 
         argc--;
         argv++;
     }
-
 
     if (modelType == ModelType::NONE) throwUsageError();
 
     return modelType;
 }
 
-void throwUsageError() {
-    throw new std::invalid_argument(USAGE_MSG);
-}
+void throwUsageError() { throw new std::invalid_argument(USAGE_MSG); }
 
 void runModel(ModelType modelType) {
     using namespace jmll::data_preprocessing;
@@ -83,7 +80,7 @@ void runModel(ModelType modelType) {
 
     auto start = std::chrono::high_resolution_clock::now();
 
-    switch(modelType) {
+    switch (modelType) {
         case ModelType::LINEAR_REGRESSION:
             TrainTestSplit data = getBostonData(TEST_SPLIT);
             LinearRegression model;
@@ -92,7 +89,7 @@ void runModel(ModelType modelType) {
             double rSquared = model.evaluate(yPred, data.yTest);
 
             std::cout << "Implementation R Squared Value: " << std::fixed << std::setprecision(2)
-                << rSquared << std::endl;
+                      << rSquared << std::endl;
 
             break;
     }

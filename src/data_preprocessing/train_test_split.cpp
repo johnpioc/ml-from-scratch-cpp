@@ -1,9 +1,8 @@
-#include <jmll/data_preprocessing/train_test_split.hpp>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
-
-#include <vector>
+#include <jmll/data_preprocessing/train_test_split.hpp>
 #include <numeric>
+#include <vector>
 
 using namespace jmll::data_preprocessing;
 using namespace jmll::core;

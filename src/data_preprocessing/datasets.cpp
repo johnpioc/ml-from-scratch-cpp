@@ -1,11 +1,10 @@
-#include <jmll/data_preprocessing/datasets.hpp>
-#include <jmll/data_preprocessing/train_test_split.hpp>
+#include <fstream>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
-
-#include <vector>
-#include <fstream>
+#include <jmll/data_preprocessing/datasets.hpp>
+#include <jmll/data_preprocessing/train_test_split.hpp>
 #include <sstream>
+#include <vector>
 
 using namespace jmll::core;
 
@@ -40,12 +39,13 @@ TrainTestSplit getBostonData(double testSplit) {
         int cellIndex = 0;
         std::vector<double> row;
 
-        while(std::getline(ss, cell, ',')) {
+        while (std::getline(ss, cell, ',')) {
             if (cellIndex++ == 0) continue;
 
-            if (cellIndex == BOSTON_LABEL_INDEX) 
+            if (cellIndex == BOSTON_LABEL_INDEX)
                 yData.push_back(std::stod(cell));
-            else row.push_back(std::stod(cell));
+            else
+                row.push_back(std::stod(cell));
         }
 
         xData.push_back(row);
@@ -57,4 +57,4 @@ TrainTestSplit getBostonData(double testSplit) {
     return TrainTestSplit(x, y, testSplit);
 }
 
-}
+}  // namespace jmll::data_preprocessing
