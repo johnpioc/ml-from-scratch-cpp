@@ -62,14 +62,14 @@ bool isVectorIdentical(jmll::core::Vector& actual, Eigen::VectorXd& expected) {
     if (actualIsColVector != expectedIsColVector) {
         std::cout << "isVectorIdentical() failed because actual is"
                   << (actualIsColVector ? " a col vector" : " a row vector") << " and expected is"
-                  << (expectedIsColVector ? "a col vector" : "a row vector") << std::endl;
+                  << (expectedIsColVector ? "a col vector" : "a row vector") << "\n";
         return false;
     }
 
     for (int i = 0; i < actual.getNumCells(); i++) {
         if (!approxEqual(actual.get(i), expected(i), 1e-2)) {
             std::cout << "isVectorIdentical() failed because cells don't equal each other"
-                      << std::endl;
+                      << "\n";
             return false;
         }
     }
@@ -84,14 +84,14 @@ bool isVectorIdentical(jmll::core::Vector& actual, Eigen::RowVectorXd& expected)
     if (actualIsColVector != expectedIsColVector) {
         std::cout << "isVectorIdentical() failed because actual is"
                   << (actualIsColVector ? " a col vector" : " a row vector") << " and expected is"
-                  << (expectedIsColVector ? "a col vector" : "a row vector") << std::endl;
+                  << (expectedIsColVector ? "a col vector" : "a row vector") << "\n";
         return false;
     }
 
     for (int i = 0; i < actual.getNumCells(); i++) {
         if (!approxEqual(actual.get(i), expected(i), 1e-2)) {
             std::cout << "isVectorIdentical() failed because cells don't equal each other"
-                      << std::endl;
+                      << "\n";
             return false;
         }
     }
@@ -271,7 +271,7 @@ TEST(Matrix, FuzzTest) {
         bool outcome = isMatrixIdentical(actual, expected);
         EXPECT_TRUE(outcome);
         if (!outcome) {
-            std::cout << "Test failed on operation: " << operation << std::endl;
+            std::cout << "Test failed on operation: " << operation << "\n";
             break;
         }
     }

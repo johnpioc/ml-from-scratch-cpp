@@ -2,7 +2,8 @@
 #include <jmll/core/vector.hpp>
 #include <vector>
 
-using namespace jmll::core;
+using jmll::core::Matrix;
+using jmll::core::Vector;
 
 // ==============================================================================================
 // MATRIX METHODS
