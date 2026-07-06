@@ -9,7 +9,7 @@
 // CONSTANTS
 // ===============================================================================================
 std::mt19937 gen(0xC0FFEE);
-constexpr int NUM_OPERATIONS = 14;
+constexpr int NUM_OPERATIONS = 18;
 constexpr int NUM_ITERATIONS = 10000;
 constexpr int MATRIX_DIM = 6;
 
@@ -106,11 +106,10 @@ TEST(Matrix, FuzzTest) {
     jmll::core::Matrix actual(MATRIX_DIM, MATRIX_DIM);
     Eigen::MatrixXd expected(MATRIX_DIM, MATRIX_DIM);
 
-    initialiseMatrices(actual, expected);
-
     for (int t = 0; t < NUM_ITERATIONS; t++) {
         int operation = getRandomOperation();
 
+        // Reset matrices every 10 tests and at the start
         if (t % 10 == 0) {
             initialiseMatrices(actual, expected);
         }
@@ -237,6 +236,34 @@ TEST(Matrix, FuzzTest) {
                          .sum()) /
                     (expected.cols() - 1);
                 EXPECT_TRUE(isVectorIdentical(actualRowVariances, expectedRowVariances));
+                break;
+            }
+            case 15: {  // Scalar Addition
+                double operand = getRandomNum();
+                actual += operand;
+                expected += Eigen::MatrixXd::Constant(expected.rows(), expected.cols(), operand);
+                break;
+            }
+            case 16: {  // Matrix Subtraction
+                jmll::core::Matrix operandA(actual.getNumRows(), actual.getNumCols());
+                Eigen::MatrixXd operandB(actual.getNumRows(), actual.getNumCols());
+                initialiseMatrices(operandA, operandB);
+                actual += operandA;
+                expected += operandB;
+                break;
+            }
+            case 17: {  // Scalar Subtraction
+                double operand = getRandomNum();
+                actual -= operand;
+                expected -= Eigen::MatrixXd::Constant(expected.rows(), expected.cols(), operand);
+                break;
+            }
+            case 18: {  // Scalar Division
+                double operand = getRandomNum();
+                actual /= operand;
+                expected =
+                    expected.array() /
+                    Eigen::MatrixXd::Constant(expected.rows(), expected.cols(), operand).array();
                 break;
             }
         }
