@@ -6,7 +6,7 @@
 namespace jmll::data_preprocessing {
 
 class TrainTestSplit {
-public:
+   public:
     core::Matrix xTrain{0, 0};
     core::Matrix xTest{0, 0};
     core::Vector yTrain{0};
@@ -15,4 +15,4 @@ public:
     TrainTestSplit(core::Matrix& x, core::Vector& y, double testSplit);
 };
 
-}
+}  // namespace jmll::data_preprocessing
