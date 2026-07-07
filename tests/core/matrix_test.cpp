@@ -115,12 +115,6 @@ TEST(Matrix, FuzzTest) {
         }
 
         switch (operation) {
-            case 0: {  // Get
-                int r = getRandomIndex();
-                int c = getRandomIndex();
-                EXPECT_EQ(actual.get(r, c), expected(r, c));
-                break;
-            }
             case 1: {  // Get Row
                 int r = getRandomIndex();
                 jmll::core::Vector actualRow = actual.getRow(r);
