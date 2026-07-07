@@ -71,6 +71,8 @@ class Vector {
 
 [[nodiscard]] Vector operator*(Vector lhs, double rhs);
 [[nodiscard]] Vector operator*(double lhs, Vector rhs);
+
+// Dot product
 [[nodiscard]] double operator*(const Vector& lhs, const Vector& rhs);
 
 [[nodiscard]] Vector operator/(Vector lhs, double rhs);
