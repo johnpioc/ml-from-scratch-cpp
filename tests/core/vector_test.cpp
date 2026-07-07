@@ -176,7 +176,7 @@ TEST(Vector, FuzzTest) {
             case 9: {  // Scalar Multiplication
                 double operand = getRandomNum();
                 actual *= operand;
-                expected *= Eigen::VectorXd::Constant(VECTOR_DIM, operand);
+                expected = expected.cwiseProduct(Eigen::VectorXd::Constant(VECTOR_DIM, operand));
                 break;
             }
             case 10: {  // Scalar Division
