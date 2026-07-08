@@ -6,7 +6,6 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 file(GLOB_RECURSE JMLL_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_CURRENT_SOURCE_DIR}/src/core/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/models/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
 )
 
 add_library(jmll STATIC ${JMLL_SOURCES})
@@ -24,3 +23,6 @@ if (BUILD_TESTS)
     enable_testing()
     add_subdirectory(tests)
 endif()
+
+add_executable(jmll_cli src/main.cpp)
+target_link_libraries(jmll_cli PRIVATE jmll::jmll)

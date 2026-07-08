@@ -7,7 +7,7 @@
 const int SUCCESS_NUM = 0;
 
 const int USAGE_ERROR_NUM = 1;
-const std::string USAGE_ERROR_MSG = "Usage Error";
+const std::string USAGE_ERROR_MSG = "Usage Error\n";
 
 enum ModelToRun { NONE, LINEAR_REGRESSION };
 
@@ -52,7 +52,7 @@ int parseCliArguments(int argc, char* argv[], ModelToRun& modelToRun) {
         }
     }
 
-    if (modelToRun == USAGE_ERROR_NUM) return USAGE_ERROR_NUM;
+    if (modelToRun == NONE) return USAGE_ERROR_NUM;
 
     return SUCCESS_NUM;
 }
