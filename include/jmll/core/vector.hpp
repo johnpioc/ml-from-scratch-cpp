@@ -14,6 +14,9 @@ class Vector {
     size_t numCells_;
 
    public:
+    /* Initialises an empty vector with no cells */
+    explicit Vector();
+
     /* Initialises a vector with a given number of cells to 0.0 */
     explicit Vector(int numCells);
 
