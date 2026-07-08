@@ -15,10 +15,10 @@ class OLS {
 
     /* Fits the model and finds coefficeints with respect to the given input matrix and
      * label vector */
-    void fit(Matrix X, Vector y);
+    void fit(const Matrix& X, const Vector& y);
 
     /* Returns a Vector of predictions for a given input matrix */
-    Vector predict(Matrix X);
+    Vector predict(const Matrix& X);
 };
 
 }  // namespace jmll::models
