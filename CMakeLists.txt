@@ -14,7 +14,7 @@ target_include_directories(jmll PUBLIC
     ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
 
-target_compile_features(jmll PUBLIC cxx_std_20)
+target_compile_features(jmll PUBLIC cxx_std_23)
 
 add_library(jmll::jmll ALIAS jmll)
 
