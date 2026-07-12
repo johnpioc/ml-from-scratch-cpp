@@ -3,6 +3,8 @@
 
 using namespace jmll::core;
 
+Vector::Vector() { this->data_ = std::vector<double>(0); }
+
 Vector::Vector(int numCells) : numCells_(numCells) {
     this->numCells_ = numCells;
     this->data_ = std::vector<double>(this->numCells_, 0.0);

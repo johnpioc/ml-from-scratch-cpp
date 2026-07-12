@@ -1,43 +1,54 @@
-#include <chrono>
-#include <iomanip>
+#include <algorithm>
+#include <cstdlib>
+#include <fstream>
 #include <iostream>
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
-#include <jmll/models/linear_regression.hpp>
-#include <jmll/models/tuning/evaluation_metric.hpp>
-#include <jmll/models/tuning/fitting_policy.hpp>
-#include <jmll/models/tuning/grid_searcher.hpp>
-#include <stdexcept>
-#include <string>
-
-#include "jmll/data_preprocessing/datasets.hpp"
-#include "jmll/data_preprocessing/train_test_split.hpp"
+#include <jmll/models/OLS.hpp>
+#include <sstream>
+#include <vector>
 
 // ===============================================================================================
-// CONSTANTS AND TYPES
+// CONSTANTS
 // ===============================================================================================
-const double TEST_SPLIT = 0.2;
+using jmll::core::Matrix;
+using jmll::core::Vector;
+using jmll::models::OLS;
 
-const std::string USAGE_MSG =
-    "[Usage]: ./jmll [model_type]\n"
-    "Model Types:\n"
-    "Linear Regression: -linReg";
+const int SUCCESS_NUM = 0;
+const int USAGE_ERROR_NUM = 1;
+const std::string USAGE_ERROR_MSG = "Usage Error\n";
+const int FILE_ERROR_NUM = 2;
+const std::string FILE_ERROR_MSG = "Cannot open data file\n";
 
-enum ModelType { NONE, LINEAR_REGRESSION };
+const std::string bostonDatasetFilepath = "./data/Boston.csv";
+
+enum ModelToRun { NONE, LINEAR_REGRESSION };
 
 // ===============================================================================================
 // FUNCTION DECLARATIONS
 // ===============================================================================================
-ModelType parseCliArguments(int argc, char* argv[]);
-void throwUsageError();
-void runModel(ModelType modelType);
+int parseCliArguments(int argc, char* argv[], ModelToRun& modelToRun);
+void parseExitCode(int exitCode);
+int getBostonDataset(Matrix& X, Vector& y, std::vector<std::string>& columnNames);
 
 // ===============================================================================================
 // MAIN FUNCTION
 // ===============================================================================================
 int main(int argc, char* argv[]) {
-    ModelType modelType = parseCliArguments(argc, argv);
-    runModel(modelType);
+    // Parse CLI arguments
+    ModelToRun modelToRun = NONE;
+    parseExitCode(parseCliArguments(argc, argv, modelToRun));
+
+    // Get Data
+    Matrix X(0, 0);
+    Vector y;
+    std::vector<std::string> columnNames;
+    parseExitCode(getBostonDataset(X, y, columnNames));
+
+    // Fit Linear Regression
+    OLS model;
+    model.fit(X, y);
 
     return 0;
 }
@@ -45,52 +56,91 @@ int main(int argc, char* argv[]) {
 // ===============================================================================================
 // HELPERS
 // ===============================================================================================
-ModelType parseCliArguments(int argc, char* argv[]) {
+int parseCliArguments(int argc, char* argv[], ModelToRun& modelToRun) {
     // Skip program name
     argc--;
     argv++;
 
-    // Retrieve model type
-    ModelType modelType = ModelType::NONE;
+    // Initialise model to none
+    modelToRun = NONE;
+
+    // Iterate through every command line argument
     while (argc > 0) {
         std::string current(argv[0]);
 
-        if (modelType != ModelType::NONE)
-            throwUsageError();
-        else if (current == "-linReg")
-            modelType = ModelType::LINEAR_REGRESSION;
-        else
-            throwUsageError();
+        if (modelToRun != NONE) {
+            return USAGE_ERROR_NUM;
+        } else if (current == "1") {  // linear regression
+            modelToRun = LINEAR_REGRESSION;
+        } else {
+            return USAGE_ERROR_NUM;
+        }
 
-        argc--;
         argv++;
+        argc--;
     }
 
-    if (modelType == ModelType::NONE) throwUsageError();
+    if (modelToRun == NONE) return USAGE_ERROR_NUM;
 
-    return modelType;
+    return SUCCESS_NUM;
 }
 
-void throwUsageError() { throw new std::invalid_argument(USAGE_MSG); }
-
-void runModel(ModelType modelType) {
-    using namespace jmll::data_preprocessing;
-    using namespace jmll::models;
-    using namespace jmll::core;
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    switch (modelType) {
-        case ModelType::LINEAR_REGRESSION:
-            TrainTestSplit data = getBostonData(TEST_SPLIT);
-            LinearRegression model;
-            model.fit(data.xTrain, data.yTrain);
-            Vector yPred = model.predict(data.xTest);
-            double rSquared = model.evaluate(yPred, data.yTest);
-
-            std::cout << "Implementation R Squared Value: " << std::fixed << std::setprecision(2)
-                      << rSquared << std::endl;
-
+void parseExitCode(int exitCode) {
+    switch (exitCode) {
+        case USAGE_ERROR_NUM: {
+            std::cerr << USAGE_ERROR_MSG;
             break;
+        }
+        case FILE_ERROR_NUM: {
+            std::cerr << FILE_ERROR_MSG;
+            break;
+        }
     }
+
+    if (exitCode != 0) std::exit(exitCode);
+}
+
+int getBostonDataset(Matrix& X, Vector& y, std::vector<std::string>& columnNames) {
+    const std::vector<int> FEATURE_INDICES = {1, 2, 4, 5, 6, 8, 9, 11, 12, 13, 14};
+
+    std::ifstream file(bostonDatasetFilepath);
+
+    // Check that file opened successfully
+    if (!file.is_open()) return FILE_ERROR_NUM;
+
+    std::string line;
+    int lineIndex = 0;
+
+    std::vector<std::vector<double>> dataVector;
+    std::vector<double> labelVector;
+
+    // Go through each row
+    while (std::getline(file, line)) {
+        std::stringstream ss(line);
+        std::string field;
+        int fieldIndex = 0;
+        std::vector<double> row;
+
+        // Split line by commas
+        while (std::getline(ss, field, ',')) {
+            if (std::ranges::contains(FEATURE_INDICES, fieldIndex)) {
+                if (lineIndex == 0)
+                    columnNames.push_back(field);
+                else if (fieldIndex == 14)
+                    labelVector.push_back(std::stod(field));
+                else
+                    row.push_back(std::stod(field));
+            }
+
+            fieldIndex++;
+        }
+
+        if (lineIndex != 0) dataVector.push_back(row);
+        lineIndex++;
+    }
+
+    X = Matrix(dataVector);
+    y = Vector(labelVector);
+
+    return SUCCESS_NUM;
 }
