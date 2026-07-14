@@ -6,5 +6,5 @@ namespace jmll::benchmark::data_generation {
 using jmll::core::Matrix;
 using jmll::core::Vector;
 
-std::pair<Matrix, Vector> make_linear_dataset(int n, int d);
+std::pair<Matrix, Vector> makeLinearDataset(int n, int d);
 };  // namespace jmll::benchmark::data_generation
