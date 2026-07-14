@@ -61,7 +61,7 @@ else()
 endif()
 
 add_executable(jmll_bench
-    # empty for now
+    ols_bench.cpp
 )
 target_link_libraries(jmll_bench PRIVATE
     jmll
