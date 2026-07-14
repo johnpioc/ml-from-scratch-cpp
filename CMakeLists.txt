@@ -26,3 +26,5 @@ endif()
 
 add_executable(jmll_cli src/main.cpp)
 target_link_libraries(jmll_cli PRIVATE jmll::jmll)
+
+add_subdirectory(benchmarks)
