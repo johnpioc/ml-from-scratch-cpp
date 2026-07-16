@@ -19,5 +19,18 @@ jobs:
       - name: Compile C++ source code
         run: cmake --build build
 
-      - name: Run executable
-        run: ./build/benchmarks/ols_bench
+      - name: Run executable and save output
+        run: |
+          echo "BENCHMARK_OUTPUT<<EOF" >> \$GITHUB_ENV
+          ./build/benchmarks/ols_bench >> \$GITHUB_ENV
+          echo "EOF" >> \$GITHUB_ENV
+
+      - name: Comment benchmark output to pr
+        uses: mshick/add-pr-comment@v2
+        if: always()
+        with:
+          message: |
+            ### Benchmark Outputs
+            ```text
+            \${{ env.BENCHMARK_OUTPUT }}
+            ```
