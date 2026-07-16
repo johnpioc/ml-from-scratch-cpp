@@ -1,6 +1,5 @@
 .DS_STORE
 build/
-data/
 .gitignore_hidden_message
 ./ml_from_scratch
 .venv

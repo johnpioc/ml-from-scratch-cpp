@@ -18,11 +18,7 @@ target_compile_features(jmll PUBLIC cxx_std_23)
 
 add_library(jmll::jmll ALIAS jmll)
 
-option(BUILD_TESTS "Build the test suite" ON)
-if (BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
+enable_testing()
+add_subdirectory(tests)
 
-add_executable(jmll_cli src/main.cpp)
-target_link_libraries(jmll_cli PRIVATE jmll::jmll)
+add_subdirectory(benchmarks)
