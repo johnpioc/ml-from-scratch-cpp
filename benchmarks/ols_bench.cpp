@@ -3,6 +3,7 @@
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
 #include <jmll/models/OLS.hpp>
+#include <mlpack.hpp>
 #include <utility>
 
 #include "data_generation.hpp"
