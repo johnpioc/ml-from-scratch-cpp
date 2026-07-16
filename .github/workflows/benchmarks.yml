@@ -26,11 +26,11 @@ jobs:
           echo "EOF" >> \$GITHUB_ENV
 
       - name: Comment benchmark output to pr
-        uses: mshick/add-pr-comment@v2
-        if: always()
-        with:
-          message: |
-            ### Benchmark Outputs
-            ```text
-            \${{ env.BENCHMARK_OUTPUT }}
-            ```
+        env:
+          GH_TOKEN ${{ github.token }}
+        run: |
+          ./build/benchmarks/ols_bench > output.txt 2>&1
+          echo - "### Benchmark Outputs\n\'\'\'text" > comment.md 
+          cat output.txt >> comment.md 
+          echo -e "\n\'\'\'" > comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
