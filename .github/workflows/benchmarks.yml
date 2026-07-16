@@ -27,7 +27,7 @@ jobs:
 
       - name: Comment benchmark output to pr
         env:
-          GH_TOKEN ${{ github.token }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           ./build/benchmarks/ols_bench > output.txt 2>&1
           echo - "### Benchmark Outputs\n\'\'\'text" > comment.md 
