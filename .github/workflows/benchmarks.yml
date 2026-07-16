@@ -35,6 +35,6 @@ jobs:
         run: |
           ./build/benchmarks/ols_bench > output.txt 2>&1
           echo - "### Benchmark Outputs\n\'\'\'text" > comment.md 
-          cat output.txt >> comment.md 
-          echo -e "\n\'\'\'" > comment.md
+          cat output.txt > comment.md 
+          echo -e "\n\'\'\'" >> comment.md
           gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md
