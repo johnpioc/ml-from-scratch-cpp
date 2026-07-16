@@ -53,6 +53,8 @@ target_link_libraries(jmll_bench_deps PRIVATE jmll::jmll)
 
 add_executable(ols_bench ols_bench.cpp)
 
+target_compile_definitions(ols_bench PRIVATE ARMA_WARN_LEVEL=0)
+
 target_link_libraries(ols_bench PRIVATE
     benchmark::benchmark
     benchmark::benchmark_main
