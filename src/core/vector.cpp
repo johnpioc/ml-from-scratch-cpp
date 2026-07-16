@@ -1,31 +1,30 @@
-#include <algorithm>
 #include <jmll/core/vector.hpp>
 #include <vector>
 
 using namespace jmll::core;
 
-Vector::Vector(int numCells):
-    numCells(numCells) {
-    this->numCells = numCells;
-    this->data_ = std::vector<double>(this->numCells, 0.0);
+Vector::Vector() { this->data_ = std::vector<double>(0); }
+
+Vector::Vector(int numCells) : numCells_(numCells) {
+    this->numCells_ = numCells;
+    this->data_ = std::vector<double>(this->numCells_, 0.0);
 }
 
 Vector::Vector(std::vector<double> data) {
-    this->numCells = data.size();
-    this->data_ = data;
+    this->numCells_ = data.size();
+    this->data_ = std::move(data);
 }
 
-void Vector::set(int i, double val) {
-    this->data_[i] = val;
-}
+size_t Vector::getNumCells() const noexcept { return this->numCells_; }
+bool Vector::isColVector() const noexcept { return this->isColVector_; }
 
-double Vector::get(int i) {
-    return this->data_[i];
-}
+void Vector::set(int i, double val) { this->data_[i] = val; }
 
-std::vector<double> Vector::getData() { return this->data_; }
+double Vector::get(int i) const { return this->data_[i]; }
 
-std::vector<double> Vector::getDataByIndices(std::vector<int> indices) {
+std::vector<double> Vector::getData() const { return this->data_; }
+
+std::vector<double> Vector::getDataByIndices(const std::vector<int>& indices) const {
     std::vector<double> result;
 
     for (int index : indices) { result.push_back(this->get(index)); }
@@ -33,47 +32,101 @@ std::vector<double> Vector::getDataByIndices(std::vector<int> indices) {
     return result;
 }
 
-void Vector::transpose() {
-    this->isColVector = !this->isColVector;
-}
+void Vector::transpose() { this->isColVector_ = !this->isColVector_; }
 
-double Vector::operator*(Vector& other) {
-    // TODO: check that this vector is a column vector and other is a row vector
-    /* TODO: check that the number of cols this vector has equals the number of rows other vector
-    * has
-    */
-
-    double dotProduct = 0.0;
-
-    for (int i = 0; i < this->numCells; i++) {
-        dotProduct += this->get(i) * other.get(i);
+Vector& Vector::operator+=(const Vector& rhs) {
+    // TODO: check vectors are same size
+    // TODO: check both are row vectors or both column vectors
+    for (int i = 0; i < this->getNumCells(); i++) {
+        this->set(i, this->get(i) + rhs.get(i));
     }
-
-
-    return dotProduct;
+    return *this;
 }
 
-Vector Vector::operator*(double scalar) {
-    Vector result(this->data_);
+Vector& Vector::operator+=(double rhs) {
+    for (int i = 0; i < this->getNumCells(); i++) {
+        this->set(i, this->get(i) + rhs);
+    }
+    return *this;
+}
 
-    for (int i = 0; i < result.numCells; i++) {
-        result.set(i, result.get(i) * scalar);
+Vector& Vector::operator-=(const Vector& rhs) {
+    // TODO: check vectors are same size
+    // TODO: check both are row vectors or both column vectors
+    for (int i = 0; i < this->getNumCells(); i++) {
+        this->set(i, this->get(i) - rhs.get(i));
+    }
+    return *this;
+}
+
+Vector& Vector::operator-=(double rhs) {
+    for (int i = 0; i < this->getNumCells(); i++) {
+        this->set(i, this->get(i) - rhs);
+    }
+    return *this;
+}
+
+Vector& Vector::operator*=(double rhs) {
+    for (int i = 0; i < this->getNumCells(); i++) {
+        this->set(i, this->get(i) * rhs);
+    }
+    return *this;
+}
+
+Vector& Vector::operator/=(double rhs) {
+    // TODO: check rhs isn't 0
+    for (int i = 0; i < this->getNumCells(); i++) {
+        this->set(i, this->get(i) / rhs);
+    }
+    return *this;
+}
+
+//================================================================================================
+// VECTOR HELPER FUNCTIONS
+//================================================================================================
+
+Vector jmll::core::operator+(Vector lhs, const Vector& rhs) {
+    lhs += rhs;
+    return lhs;
+}
+
+Vector jmll::core::operator+(Vector lhs, double rhs) {
+    lhs += rhs;
+    return lhs;
+}
+
+Vector jmll::core::operator-(Vector lhs, const Vector& rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Vector jmll::core::operator-(Vector lhs, double rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Vector jmll::core::operator*(Vector lhs, double rhs) {
+    lhs *= rhs;
+    return lhs;
+}
+
+Vector jmll::core::operator*(double lhs, Vector rhs) {
+    rhs *= lhs;
+    return rhs;
+}
+
+double jmll::core::operator*(const Vector& lhs, const Vector& rhs) {
+    // TODO: check vectors are same size
+    double result = 0;
+
+    for (int i = 0; i < lhs.getNumCells(); i++) {
+        result += lhs.get(i) * rhs.get(i);
     }
 
     return result;
 }
 
-Vector Vector::operator-=(Vector& other) {
-    // TODO: dimension check
-    // TODO: check both are col vectors or both are row vectors
-
-    for (int i = 0; i < this->numCells; i++) {
-        this->set(i, this->get(i) - other.get(i));
-    }
-
-    return *this;
-}
-
-Vector Vector::operator-(Vector& rhs) {
-    return *this -= rhs;
+Vector jmll::core::operator/(Vector lhs, double rhs) {
+    lhs /= rhs;
+    return lhs;
 }

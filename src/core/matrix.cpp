@@ -2,35 +2,31 @@
 #include <jmll/core/vector.hpp>
 #include <vector>
 
-using namespace jmll::core;
+using jmll::core::Matrix;
+using jmll::core::Vector;
 
 // ==============================================================================================
 // MATRIX METHODS
 // ==============================================================================================
-Matrix::Matrix(int numRows, int numCols): 
-    numRows(numRows),
-    numCols(numCols) {
-    this->data_ = std::vector<std::vector<double>>(
-        this->numRows, 
-        std::vector<double>(this->numCols, 0.0)
-    );
+Matrix::Matrix(int numRows, int numCols) : numRows_(numRows), numCols_(numCols) {
+    this->data_ =
+        std::vector<std::vector<double>>(this->numRows_, std::vector<double>(this->numCols_, 0.0));
 }
 
-Matrix::Matrix(std::vector<std::vector<double>>& data) {
-    this->numRows = data.size();
-    this->numCols = data.front().size();
-    this->data_ = data;
+Matrix::Matrix(std::vector<std::vector<double>> data) {
+    this->numRows_ = data.size();
+    this->numCols_ = data.front().size();
+    this->data_ = std::move(data);
 }
 
-double Matrix::get(int r, int c) {
-    return this->data_[r][c];
-}
+size_t Matrix::getNumRows() const noexcept { return this->numRows_; }
+size_t Matrix::getNumCols() const noexcept { return this->numCols_; }
 
-Vector Matrix::getRow(int r) {
-    return Vector(this->data_[r]);
-}
+double Matrix::get(int r, int c) const { return this->data_[r][c]; }
 
-Matrix Matrix::getRows(std::vector<int>& indices) {
+Vector Matrix::getRow(int r) const { return Vector(this->data_[r]); }
+
+Matrix Matrix::getRows(const std::vector<int>& indices) const {
     std::vector<std::vector<double>> rows;
 
     for (int index : indices) {
@@ -40,74 +36,82 @@ Matrix Matrix::getRows(std::vector<int>& indices) {
     return Matrix(rows);
 }
 
-void Matrix::set(int r, int c, double val) {
-    this->data_[r][c] = val;
+Vector Matrix::getCol(int c) const {
+    // TODO: check c is within bounds
+    Vector result(this->getNumRows());
+
+    for (int i = 0; i < result.getNumCells(); i++) {
+        result.set(i, this->get(i, c));
+    }
+    return result;
 }
 
-Matrix Matrix::operator*(Matrix& other) {
-    // TODO: throw exception if this number of cols does not equal other's num of rows
-    
-    Matrix res(this->numRows, other.numCols);
+void Matrix::set(int r, int c, double val) { this->data_[r][c] = val; }
 
-    for (int ra = 0; ra < this->numRows; ra++) {
-        for (int cb = 0; cb < other.numCols; cb++) {
-            double val = 0;
-            for (int i = 0; i < this->numCols; i++) {
-                val += this->get(ra, i) * other.get(i, cb);
-            }
-            res.set(ra, cb, val);
+Matrix& Matrix::operator+=(const Matrix& rhs) {
+    // TODO: check both matrices are same shape
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) + rhs.get(r, c));
         }
     }
 
-    return res;
+    return *this;
 }
 
-Vector Matrix::operator*(Vector& vec) {
-    int common = vec.isColVector ? vec.numCells : 1;
-    // TODO: throw exception if the number of cols in matrix doesn't equal commmon
-    
-    Vector res(this->numRows);
-    for (int ra = 0; ra < this->numRows; ra++) {
-        double val = 0;
-        for (int i = 0; i < common; i++) {
-            val += this->get(ra, i) * vec.get(i); 
-        }
-        res.set(ra, val);
-    }
-
-    return res;
-}
-
-Matrix Matrix::operator*(double scalar) {
-    Matrix res(this->data_);
-
-    for (int r = 0; r < res.numRows; r++) {
-        for (int c = 0; c < res.numCols; c++) {
-            res.set(r, c, res.get(r,c) * scalar);
+Matrix& Matrix::operator+=(double rhs) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) + rhs);
         }
     }
 
-    return res;
+    return *this;
 }
 
-Matrix Matrix::operator+(Matrix& other) {
-    // TODO: ensure both matrices are the same shape
-    Matrix res(this->data_);
-
-    for (int r = 0; r < res.numRows; r++) {
-        for (int c = 0; c < res.numCols; c++) {
-            res.set(r,c, this->get(r,c) + other.get(r,c));
+Matrix& Matrix::operator-=(const Matrix& rhs) {
+    // TODO: check both matrices are same shape
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) - rhs.get(r, c));
         }
     }
 
-    return res;
+    return *this;
 }
 
-Matrix Matrix::transpose() {
-    Matrix res(this->numCols, this->numRows);
+Matrix& Matrix::operator-=(double rhs) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) - rhs);
+        }
+    }
 
-    for (int r = 0; r < this->numRows; r++) {
-        for (int c = 0; c < this->numCols; c++) {
+    return *this;
+}
+
+Matrix& Matrix::operator*=(const Matrix& rhs) {
+    *this = *this * rhs;
+    return *this;
+}
+
+Matrix& Matrix::operator*=(double rhs) {
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            this->set(r, c, this->get(r, c) * rhs);
+        }
+    }
+
+    return *this;
+}
+
+Matrix& Matrix::operator/=(double rhs) { return *this *= (1.0 / rhs); }
+
+Matrix Matrix::transpose() const {
+    Matrix res(this->numCols_, this->numRows_);
+
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
             res.set(c, r, this->get(r, c));
         }
     }
@@ -117,9 +121,9 @@ Matrix Matrix::transpose() {
 
 // Source: https://www.geeksforgeeks.org/computer-science-fundamentals/
 // finding-inverse-of-a-matrix-using-gauss-jordan-method/
-Matrix Matrix::inverse() {
-    int order = this->numRows;
-    
+Matrix Matrix::inverse() const {
+    int order = this->numRows_;
+
     Matrix aug(order, 2 * order);
 
     for (int i = 0; i < order; i++) {
@@ -162,16 +166,66 @@ Matrix Matrix::inverse() {
     return inv;
 }
 
-Matrix Matrix::prependOnes() {
-    Matrix augmented(this->numRows, this->numCols + 1);
+Matrix Matrix::prependOnes() const noexcept {
+    Matrix augmented(this->numRows_, this->numCols_ + 1);
 
-    for (int r = 0; r < augmented.numRows; r++) {
-        for (int c = 0; c < augmented.numCols; c++) {
+    for (int r = 0; r < augmented.getNumRows(); r++) {
+        for (int c = 0; c < augmented.getNumCols(); c++) {
             augmented.set(r, c, c == 0 ? 1.0 : this->get(r, c - 1));
         }
     }
 
     return augmented;
+}
+
+Vector Matrix::getColMeans() const {
+    Vector colMeans(this->numCols_);
+    colMeans.transpose();
+
+    for (int r = 0; r < this->numRows_; r++) {
+        colMeans += this->getRow(r);
+    }
+
+    return colMeans / static_cast<double>(this->numRows_);
+}
+
+Vector Matrix::getRowMeans() const {
+    Vector rowMeans(this->numRows_);
+
+    for (int c = 0; c < this->numCols_; c++) {
+        rowMeans += this->getCol(c);
+    }
+
+    return rowMeans / static_cast<double>(this->numCols_);
+}
+
+Vector Matrix::getColVariances() const {
+    Vector colVariances(this->numCols_);
+    Vector colMeans = this->getColMeans();
+    colVariances.transpose();
+
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            double residual = this->get(r, c) - colMeans.get(c);
+            colVariances.set(c, colVariances.get(c) + residual * residual);
+        }
+    }
+
+    return colVariances / static_cast<double>(this->numRows_ - 1);
+}
+
+Vector Matrix::getRowVariances() const {
+    Vector rowVariances(this->numRows_);
+    Vector rowMeans = this->getRowMeans();
+
+    for (int r = 0; r < this->numRows_; r++) {
+        for (int c = 0; c < this->numCols_; c++) {
+            double residual = this->get(r, c) - rowMeans.get(r);
+            rowVariances.set(r, rowVariances.get(r) + residual * residual);
+        }
+    }
+
+    return rowVariances / static_cast<double>(this->numCols_ - 1);
 }
 
 // ==============================================================================================
@@ -187,3 +241,95 @@ Matrix jmll::core::identity(int order) {
     return res;
 }
 
+Matrix jmll::core::operator+(Matrix lhs, const Matrix& rhs) {
+    lhs += rhs;
+    return lhs;
+}
+
+Matrix jmll::core::operator+(Matrix lhs, double rhs) {
+    lhs += rhs;
+    return lhs;
+}
+
+Matrix jmll::core::operator-(Matrix lhs, const Matrix& rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Matrix jmll::core::operator-(Matrix lhs, double rhs) {
+    lhs -= rhs;
+    return lhs;
+}
+
+Matrix jmll::core::operator*(const Matrix& lhs, const Matrix& rhs) {
+    // TODO: throw exception if lhs columns != rhs rows
+    int m = lhs.getNumRows();
+    int n = lhs.getNumCols();
+    int p = rhs.getNumCols();
+
+    Matrix result(m, p);
+
+    for (int ra = 0; ra < m; ra++) {
+        for (int cb = 0; cb < p; cb++) {
+            double val = 0.0;
+            for (int i = 0; i < n; i++) {
+                val += lhs.get(ra, i) * rhs.get(i, cb);
+            }
+            result.set(ra, cb, val);
+        }
+    }
+    return result;
+}
+
+Vector jmll::core::operator*(const Matrix& lhs, const Vector& rhs) {
+    // TODO: check lhs cols == rhs rows
+    // TODO: check rhs is a column vector
+
+    int common = lhs.getNumCols();
+    Vector result(lhs.getNumRows());
+
+    for (int r = 0; r < lhs.getNumRows(); r++) {
+        double value = 0.0;
+        for (int i = 0; i < common; i++) {
+            value += lhs.get(r, i) * rhs.get(i);
+        }
+        result.set(r, value);
+    }
+
+    return result;
+}
+
+Vector jmll::core::operator*(const Vector& lhs, const Matrix& rhs) {
+    // TODO: check lhs is a row vector
+    // TODO: check lhs cols = rhs rows
+
+    int common = lhs.getNumCells();
+    Vector result(rhs.getNumCols());
+    result.transpose();
+
+    for (int c = 0; c < rhs.getNumCols(); c++) {
+        double value = 0.0;
+        for (int i = 0; i < common; i++) {
+            value += lhs.get(i) * rhs.get(i, c);
+        }
+        result.set(c, value);
+    }
+
+    return result;
+}
+
+Matrix jmll::core::operator*(Matrix lhs, double rhs) {
+    lhs *= rhs;
+    return lhs;
+}
+
+Matrix jmll::core::operator*(double lhs, Matrix rhs) {
+    rhs *= lhs;
+    return rhs;
+}
+
+Matrix jmll::core::operator/(Matrix lhs, double rhs) {
+    // Check that rhs != 0
+    lhs /= rhs;
+    return lhs;
+}

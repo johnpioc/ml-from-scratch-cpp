@@ -1,0 +1,40 @@
+name: Run Benchmarks
+on: 
+  pull_request:
+
+jobs:
+  build-and-run:
+    runs-on: macos-latest
+
+    permissions:
+      pull-requests: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install project dependencies
+        run: brew install ensmallen armadillo cereal
+
+      - name: Create Make files
+        run: cmake -S . -B build
+
+      - name: Compile C++ source code
+        run: cmake --build build
+
+      - name: Run executable and save output
+        run: |
+          echo "BENCHMARK_OUTPUT<<EOF" >> \$GITHUB_ENV
+          ./build/benchmarks/ols_bench >> \$GITHUB_ENV
+          echo "EOF" >> \$GITHUB_ENV
+
+      - name: Comment benchmark output to pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ./build/benchmarks/ols_bench > output.txt 2>&1
+          echo - "### Benchmark Outputs\n\'\'\'text" > comment.md 
+          cat output.txt > comment.md 
+          echo -e "\n\'\'\'" >> comment.md
+          gh pr comment ${{ github.event.pull_request.number }} --body-file comment.md

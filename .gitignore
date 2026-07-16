@@ -1,6 +1,5 @@
 .DS_STORE
 build/
-data/
 .gitignore_hidden_message
 ./ml_from_scratch
 .venv
@@ -8,4 +7,4 @@ __MACOSX
 .husky
 node_modules/
 package-lock.json
-.cache/
+Testing/

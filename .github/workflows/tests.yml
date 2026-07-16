@@ -5,10 +5,13 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: brew install armadillo ensmallen cereal
 
       - name: Configure
         run: cmake -B build -DBUILD_TESTS=ON
