@@ -6,7 +6,7 @@
 namespace jmll::core {
 
 class Vector {
-   private:
+private:
     /* The underlying data inside the vector */
     std::vector<double> data_;
 

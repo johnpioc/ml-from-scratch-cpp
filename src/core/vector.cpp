@@ -27,9 +27,7 @@ std::vector<double> Vector::getData() const { return this->data_; }
 std::vector<double> Vector::getDataByIndices(const std::vector<int>& indices) const {
     std::vector<double> result;
 
-    for (int index : indices) {
-        result.push_back(this->get(index));
-    }
+    for (int index : indices) { result.push_back(this->get(index)); }
 
     return result;
 }

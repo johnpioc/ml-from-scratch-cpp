@@ -6,7 +6,7 @@
 namespace jmll::core {
 
 class Matrix {
-   private:
+private:
     /* The underlying data inside the matrix */
     std::vector<std::vector<double>> data_;
 
@@ -102,4 +102,4 @@ class Matrix {
 
 [[nodiscard]] Matrix operator/(Matrix lhs, double rhs);
 
-}  // namespace jmll::core
+}
