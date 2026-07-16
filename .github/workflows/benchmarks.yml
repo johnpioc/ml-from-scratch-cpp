@@ -6,6 +6,10 @@ jobs:
   build-and-run:
     runs-on: macos-latest
 
+    permissions:
+      pull-requests: write
+      contents: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
