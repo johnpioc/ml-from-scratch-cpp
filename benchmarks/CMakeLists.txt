@@ -51,6 +51,7 @@ target_link_libraries(mlpack INTERFACE
 
 target_link_libraries(jmll_bench_deps PRIVATE jmll::jmll)
 
+# OLS 
 add_executable(ols_bench ols_bench.cpp)
 
 target_compile_definitions(ols_bench PRIVATE ARMA_WARN_LEVEL=0)
@@ -63,4 +64,15 @@ target_link_libraries(ols_bench PRIVATE
     mlpack
 )
 
+# Ridge
+add_executable(ridge_bench ridge_bench.cpp)
 
+target_compile_definitions(ridge_bench PRIVATE ARMA_WARN_LEVEL=0)
+
+target_link_libraries(ridge_bench PRIVATE
+    benchmark::benchmark
+    benchmark::benchmark_main
+    jmll::jmll
+    jmll_bench_deps
+    mlpack
+)
