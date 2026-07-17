@@ -6,6 +6,7 @@ performance programming, software design, and machine learning.
 ### Models Implemented
 
 - Ordinary Least Squares Linear Regression `OLS()`
+- Ridge Regression / L2 Linear Regression 'Ridge()'
 
 ### Running Benchmarks
 
