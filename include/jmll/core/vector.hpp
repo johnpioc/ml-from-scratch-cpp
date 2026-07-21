@@ -6,7 +6,7 @@
 namespace jmll::core {
 
 class Vector {
-private:
+   private:
     /* The underlying data inside the vector */
     std::vector<double> data_;
 
@@ -64,6 +64,9 @@ private:
 
     /* Vector Element-wise Division */
     Vector& operator/=(double rhs);
+
+    /* Returns the sum of all the elements in the vector */
+    [[nodiscard]] double getSum() const;
 };
 
 [[nodiscard]] Vector operator+(Vector lhs, const Vector& rhs);

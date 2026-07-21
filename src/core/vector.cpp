@@ -1,4 +1,5 @@
 #include <jmll/core/vector.hpp>
+#include <numeric>
 #include <vector>
 
 using namespace jmll::core;
@@ -27,7 +28,9 @@ std::vector<double> Vector::getData() const { return this->data_; }
 std::vector<double> Vector::getDataByIndices(const std::vector<int>& indices) const {
     std::vector<double> result;
 
-    for (int index : indices) { result.push_back(this->get(index)); }
+    for (int index : indices) {
+        result.push_back(this->get(index));
+    }
 
     return result;
 }
@@ -80,6 +83,8 @@ Vector& Vector::operator/=(double rhs) {
     }
     return *this;
 }
+
+double Vector::getSum() const { return std::accumulate(this->data_.begin(), this->data_.end(), 0); }
 
 //================================================================================================
 // VECTOR HELPER FUNCTIONS

@@ -1,7 +1,6 @@
 #include <jmll/core/matrix.hpp>
 #include <jmll/core/vector.hpp>
 #include <memory>
-#include <vector>
 
 namespace jmll::core {
 class KDNode {
@@ -26,6 +25,10 @@ class KDNode {
 
     [[nodiscard]] int getKeySize() const;
     [[nodiscard]] double getKeyVal(int i) const;
+
+    [[nodiscard]] const Vector getKey() const;
+
+    [[nodiscard]] double getValue() const;
 };
 
 class KDTree {
@@ -35,5 +38,9 @@ class KDTree {
 
    public:
     KDTree(const Matrix& data, const Vector& labels);
+
+    [[nodiscard]] int getSize() const;
+
+    [[nodiscard]] Vector searchNearestNeighbours(const Vector& point, int k) const;
 };
 }  // namespace jmll::core
